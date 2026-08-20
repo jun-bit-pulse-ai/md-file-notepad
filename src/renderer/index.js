@@ -31,6 +31,7 @@ import {
 import { Sidebar } from './ui/sidebar.js'
 import { StatusBar } from './ui/statusbar.js'
 import { buildHtmlDocument } from './lib/export.js'
+import { markdownToDocx } from './lib/docx.js'
 import { SHORTCUTS, MARKDOWN_REFERENCE } from './lib/help.js'
 
 const api = window.notepad
@@ -245,6 +246,68 @@ async function exportAs(kind) {
   else if (result?.error) statusBar.flash(result.error, 'error')
 }
 
+/**
+ * Resolves a Markdown image target to an absolute filesystem path.
+ * Remote and data URIs are skipped: the export embeds local files only.
+ */
+function resolveLocalImagePath(src) {
+  if (!src || /^(https?:|data:)/i.test(src)) return null
+  const cleaned = src.replace(/^file:\/\//, '').replace(/^<|>$/g, '')
+  if (cleaned.startsWith('/')) return cleaned
+  if (!doc.directory) return null
+  return `${doc.directory.replace(/\/$/, '')}/${cleaned.replace(/^\.\//, '')}`
+}
+
+/** Loads image bytes and intrinsic size for embedding in a .docx. */
+async function loadImageForExport(src) {
+  const filePath = resolveLocalImagePath(src)
+  if (!filePath) return null
+
+  const result = await api.readBinary(filePath)
+  if (!result?.ok || !result.data) return null
+
+  const data = new Uint8Array(result.data)
+  try {
+    const bitmap = await createImageBitmap(new Blob([data]))
+    const size = { width: bitmap.width, height: bitmap.height }
+    bitmap.close()
+    return { data, ...size }
+  } catch {
+    // Undecodable here, but Word may still render it; fall back to a size.
+    return { data, width: 0, height: 0 }
+  }
+}
+
+async function exportDocx() {
+  const markdown = view.state.doc.toString()
+  statusBar.flash('Building Word document…')
+  try {
+    const buffer = await markdownToDocx(markdown, {
+      title: doc.fileName.replace(/\.[^.]+$/, ''),
+      loadImage: loadImageForExport,
+    })
+    const result = await api.exportDocx({
+      data: new Uint8Array(buffer),
+      defaultName: doc.fileName,
+    })
+    if (result?.ok) statusBar.flash('Exported DOCX')
+    else if (result?.error) statusBar.flash(result.error, 'error')
+  } catch (err) {
+    console.error('[export] docx failed', err)
+    statusBar.flash(`Word export failed: ${err.message}`, 'error')
+  }
+}
+
+/** Spell checking is Chromium's; this toggles it in both processes. */
+async function toggleSpellcheck() {
+  const next = prefs.spellcheck === false
+  prefs.spellcheck = next
+  setSpellcheck(view, next)
+  await api.setSpellcheck(next)
+  await api.setPrefs({ spellcheck: next })
+  statusBar.flash(next ? 'Spell check on' : 'Spell check off')
+}
+
 /* ------------------------------------------------------------------ */
 /* View modes                                                          */
 /* ------------------------------------------------------------------ */
@@ -306,6 +369,7 @@ const MENU_ACTIONS = {
   'file:save-as': () => saveAs(),
   'file:export-html': () => exportAs('html'),
   'file:export-pdf': () => exportAs('pdf'),
+  'file:export-docx': () => exportDocx(),
   'file:reveal': () => doc.filePath && api.revealInFinder(doc.filePath),
   'file:new': () => api.newFile(),
 
@@ -313,6 +377,7 @@ const MENU_ACTIONS = {
   'edit:replace': () => openSearchPanel(view),
   'edit:copy-markdown': () => copySelectionAsMarkdown(),
   'edit:paste-plain': () => pastePlainText(),
+  'edit:toggle-spellcheck': () => toggleSpellcheck(),
 
   'format:bold': () => toggleBold(view),
   'format:italic': () => toggleItalic(view),

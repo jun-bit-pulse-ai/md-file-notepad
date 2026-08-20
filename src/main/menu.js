@@ -82,6 +82,7 @@ function buildMenu({ store, send, onOpenFile, onOpenRecent, onClearRecent, onNew
       {
         label: 'Export',
         submenu: [
+          { label: 'Word (.docx)…', click: cmd('file:export-docx') },
           { label: 'HTML…', click: cmd('file:export-html') },
           { label: 'PDF…', click: cmd('file:export-pdf') },
         ],
@@ -128,6 +129,24 @@ function buildMenu({ store, send, onOpenFile, onOpenRecent, onClearRecent, onNew
         label: 'Copy as Markdown',
         accelerator: 'CmdOrCtrl+Shift+C',
         click: cmd('edit:copy-markdown'),
+      },
+      { type: 'separator' },
+      {
+        label: 'Spelling',
+        submenu: [
+          {
+            label: 'Check Spelling While Typing',
+            type: 'checkbox',
+            checked: store.get('spellcheck') !== false,
+            click: cmd('edit:toggle-spellcheck'),
+          },
+          { type: 'separator' },
+          {
+            label: 'Show Spelling Suggestions',
+            enabled: false,
+            toolTip: 'Right-click a misspelled word to see suggestions',
+          },
+        ],
       },
     ],
   })

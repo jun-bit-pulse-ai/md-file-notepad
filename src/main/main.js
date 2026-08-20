@@ -3,7 +3,9 @@ const {
   BrowserWindow,
   dialog,
   ipcMain,
+  Menu,
   nativeTheme,
+  session,
   shell,
 } = require('electron')
 const path = require('node:path')
@@ -13,6 +15,10 @@ const fsSync = require('node:fs')
 const { IPC } = require('../shared/ipc.js')
 const { Store } = require('./store.js')
 const { buildMenu } = require('./menu.js')
+const {
+  applySpellCheckerSettings,
+  buildContextMenuTemplate,
+} = require('./spellcheck.js')
 const {
   FILE_FILTERS,
   isMarkdownPath,
@@ -99,6 +105,17 @@ function createWindow(openPath = null) {
       event.preventDefault()
       if (/^https?:/i.test(url)) shell.openExternal(url)
     }
+  })
+
+  // Right-click: spelling suggestions first, then the usual edit items.
+  win.webContents.on('context-menu', (_event, params) => {
+    const template = buildContextMenuTemplate(params, {
+      onReplaceMisspelling: (word) => win.webContents.replaceMisspelling(word),
+      onAddToDictionary: (word) =>
+        win.webContents.session.addWordToSpellCheckerDictionary(word),
+      onCommand: (command) => win.webContents.send(IPC.MENU_COMMAND, command),
+    })
+    Menu.buildFromTemplate(template).popup({ window: win })
   })
 
   return win
@@ -364,6 +381,41 @@ function registerIpc() {
     }
   })
 
+  ipcMain.handle(IPC.FILE_EXPORT_DOCX, async (event, { data, defaultName }) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    const { canceled, filePath } = await dialog.showSaveDialog(win, {
+      defaultPath: (defaultName || 'Untitled').replace(/\.[^.]+$/, '') + '.docx',
+      filters: [{ name: 'Word Document', extensions: ['docx'] }],
+    })
+    if (canceled || !filePath) return { ok: false, canceled: true }
+    try {
+      await fs.writeFile(filePath, Buffer.from(data))
+      return { ok: true, filePath }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle(IPC.FILE_READ_BINARY, async (_event, filePath) => {
+    try {
+      const buffer = await fs.readFile(filePath)
+      // Uint8Array survives structured cloning; Buffer does not round-trip.
+      return { ok: true, data: new Uint8Array(buffer) }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle(IPC.SPELLCHECK_SET, (_event, enabled) => {
+    store.set('spellcheck', Boolean(enabled))
+    const applied = applySpellCheckerSettings(session.defaultSession, {
+      enabled: Boolean(enabled),
+      languages: store.get('spellcheckLanguages'),
+    })
+    refreshMenu()
+    return applied
+  })
+
   ipcMain.handle(IPC.FILE_REVEAL, (_event, filePath) => {
     if (!filePath) return { ok: false }
     shell.showItemInFolder(filePath)
@@ -487,6 +539,10 @@ if (!gotLock) {
     store = new Store(path.join(app.getPath('userData'), 'preferences.json'))
     applyTheme(store.get('theme'))
     nativeTheme.on('updated', broadcastTheme)
+    applySpellCheckerSettings(session.defaultSession, {
+      enabled: store.get('spellcheck') !== false,
+      languages: store.get('spellcheckLanguages'),
+    })
 
     registerIpc()
     refreshMenu()

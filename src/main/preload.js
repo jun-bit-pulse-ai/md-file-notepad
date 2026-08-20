@@ -17,6 +17,10 @@ const api = {
   saveAs: (payload) => ipcRenderer.invoke(IPC.FILE_SAVE_AS, payload),
   exportHtml: (payload) => ipcRenderer.invoke(IPC.FILE_EXPORT_HTML, payload),
   exportPdf: (payload) => ipcRenderer.invoke(IPC.FILE_EXPORT_PDF, payload),
+  exportDocx: (payload) => ipcRenderer.invoke(IPC.FILE_EXPORT_DOCX, payload),
+  /** Reads a file as raw bytes, for embedding images in exports. */
+  readBinary: (filePath) => ipcRenderer.invoke(IPC.FILE_READ_BINARY, filePath),
+  setSpellcheck: (enabled) => ipcRenderer.invoke(IPC.SPELLCHECK_SET, enabled),
   revealInFinder: (filePath) => ipcRenderer.invoke(IPC.FILE_REVEAL, filePath),
   listDirectory: (dirPath) => ipcRenderer.invoke(IPC.FILE_LIST_DIR, dirPath),
 

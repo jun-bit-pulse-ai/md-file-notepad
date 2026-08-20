@@ -9,7 +9,7 @@
  *
  * Exits non-zero if the renderer logged an error, so it can gate a build.
  */
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -25,6 +25,22 @@ const errors = []
 
 // Booting the real main process wires up every IPC handler and the menu.
 require('../src/main/main.js')
+
+/**
+ * Optional end-to-end check of the Word export. Replaces the save-dialog
+ * handler with one that writes straight to a path, so the renderer's real
+ * export pipeline (bundled docx library included) runs unattended.
+ */
+const docxOut = flag('export-docx', '')
+if (docxOut) {
+  app.whenReady().then(() => {
+    ipcMain.removeHandler('file:export-docx')
+    ipcMain.handle('file:export-docx', async (_event, { data }) => {
+      fs.writeFileSync(path.resolve(docxOut), Buffer.from(data))
+      return { ok: true, filePath: path.resolve(docxOut) }
+    })
+  })
+}
 
 app.whenReady().then(() => {
   setTimeout(async () => {
@@ -50,6 +66,8 @@ app.whenReady().then(() => {
         tables: document.querySelectorAll('.cm-table-wrap table').length,
         checkboxes: document.querySelectorAll('.cm-task-checkbox').length,
         math: document.querySelectorAll('.cm-math').length,
+        codeSpellcheckOff: document.querySelectorAll('.cm-md-codeblock[spellcheck=\\"false\\"]').length,
+        proseSpellcheckOn: document.querySelector('.cm-content')?.getAttribute('spellcheck') || null,
         bullets: document.querySelectorAll('.cm-bullet').length,
         links: document.querySelectorAll('.cm-md-link').length,
         hrs: document.querySelectorAll('.cm-hr-wrap').length,
@@ -75,6 +93,14 @@ app.whenReady().then(() => {
         `document.querySelector('.cm-scroller').scrollTop = ${scroll}`
       )
       await new Promise((resolve) => setTimeout(resolve, 600))
+    }
+
+    if (docxOut) {
+      win.webContents.send('menu:command', 'file:export-docx')
+      await new Promise((resolve) => setTimeout(resolve, 2500))
+      const written = fs.existsSync(path.resolve(docxOut))
+      report.docxExported = written
+      report.docxBytes = written ? fs.statSync(path.resolve(docxOut)).size : 0
     }
 
     const image = await win.webContents.capturePage()

@@ -25,6 +25,9 @@ pane and no preview toggle: one editable, rendered document.
 - Enter continues lists, renumbers ordered ones, and ends the list on an empty item
 - Multi-cursor editing, and formatting commands that toggle symmetrically
 - Pasting rich text converts it to Markdown
+- Spell checking as you type, with right-click suggestions and "Add to
+  Dictionary" — code blocks and inline code are excluded, so identifiers
+  aren't flagged as typos
 
 **Reading**
 
@@ -42,7 +45,7 @@ pane and no preview toggle: one editable, rendered document.
 - Proxy icon, "Edited" title state, and unsaved-changes prompts on close
 - Open Recent, `.md` file associations, and drag-and-drop to open
 - Reloads the document when it changes on disk (unless you have unsaved edits)
-- Export to HTML and PDF
+- Export to Word (.docx), HTML and PDF
 
 ## Getting started
 
@@ -89,6 +92,7 @@ src/main/       Electron main process — windows, menu, dialogs, file I/O
   files.js      Atomic writes, directory listing, disk watching
   store.js      JSON preference store
   menu.js       Native application menu
+  spellcheck.js Spell-checker configuration and the right-click menu
   preload.js    The renderer's entire privileged surface (contextIsolation on)
 src/renderer/   UI (CodeMirror 6)
   editor/
@@ -97,6 +101,7 @@ src/renderer/   UI (CodeMirror 6)
     widgets.js      Rendered tables, images, math, checkboxes
     modes.js        Focus and typewriter modes
   lib/            Pure logic: outline, stats, Markdown rendering, export
+    docx.js       Markdown-to-Word conversion
   ui/             Sidebar and status bar
 ```
 
@@ -110,6 +115,27 @@ requires block decorations to be known before the viewport is measured.
 The renderer runs with `contextIsolation` on, `nodeIntegration` off, and a
 restrictive CSP. Markdown is rendered with inline HTML disabled, so opening
 someone else's file cannot execute script.
+
+### Word export
+
+`lib/docx.js` converts in two steps: `parseBlocks` turns the Markdown token
+stream into plain block descriptors, and `buildDocument` maps those onto Word
+structures. Keeping the first step free of the docx library is what makes the
+mapping directly unit-testable.
+
+Headings, emphasis, links, tables, ordered and bulleted lists, task state,
+blockquotes, code blocks and rules all map onto native Word features rather
+than being flattened into styled text. Local images are embedded at their
+intrinsic size, scaled to fit the text column; an image that can't be read
+degrades to a caption rather than disappearing. Math is exported as its LaTeX
+source in a monospace run — Word's equation format (OMML) is not generated.
+
+### Spell checking
+
+Chromium does the checking on the editable surface. On macOS that means the
+system speller, which picks the language itself; language selection only
+applies on Windows and Linux. `spellcheck.js` keeps the context-menu shape as
+a plain template array so it can be tested without launching Electron.
 
 ## License
 

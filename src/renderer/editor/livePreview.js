@@ -34,8 +34,15 @@ const previewConfig = StateField.define({
 
 const hidden = Decoration.replace({})
 
-const lineDeco = (cls) => Decoration.line({ class: cls })
-const markDeco = (cls) => Decoration.mark({ class: cls })
+const lineDeco = (cls, attributes) => Decoration.line({ class: cls, attributes })
+const markDeco = (cls, attributes) => Decoration.mark({ class: cls, attributes })
+
+/**
+ * Chromium spell-checks the whole editable surface, which would underline
+ * every identifier in a code block. Opting code out keeps the squiggles on
+ * prose, where they belong.
+ */
+const NO_SPELLCHECK = { spellcheck: 'false' }
 
 const HEADING_RE = /^ATXHeading(\d)$/
 const SETEXT_RE = /^SetextHeading(\d)$/
@@ -54,8 +61,8 @@ class DecorationCollector {
     this.items.push(decoration.range(from, to))
   }
 
-  line(pos, cls) {
-    this.items.push(lineDeco(cls).range(pos))
+  line(pos, cls, attributes) {
+    this.items.push(lineDeco(cls, attributes).range(pos))
   }
 
   finish() {
@@ -149,7 +156,7 @@ function buildDecorations(view) {
           }
 
           case 'InlineCode': {
-            collector.add(nodeFrom, nodeTo, markDeco('cm-md-code'))
+            collector.add(nodeFrom, nodeTo, markDeco('cm-md-code', NO_SPELLCHECK))
             if (!isActive(nodeFrom, nodeTo)) {
               for (const child of childrenOf(node)) {
                 if (child.name === 'CodeMark') collector.add(child.from, child.to, hidden)
@@ -236,7 +243,7 @@ function buildDecorations(view) {
               const classes = ['cm-md-codeblock']
               if (n === startLine.number) classes.push('cm-md-codeblock-first')
               if (n === endLine.number) classes.push('cm-md-codeblock-last')
-              collector.line(line.from, classes.join(' '))
+              collector.line(line.from, classes.join(' '), NO_SPELLCHECK)
             }
             if (!active) {
               const marks = childrenOf(node).filter((c) => c.name === 'CodeMark')
