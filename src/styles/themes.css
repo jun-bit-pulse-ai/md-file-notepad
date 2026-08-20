@@ -1,0 +1,107 @@
+/*
+ * Theme tokens. Everything visual references these, so light/dark is a
+ * single attribute flip on <html> driven by the macOS system appearance.
+ */
+
+:root {
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue',
+    'Segoe UI', Arial, sans-serif;
+  --font-mono: 'SF Mono', ui-monospace, Menlo, 'JetBrains Mono', Consolas, monospace;
+  --font-heading: var(--font-body);
+
+  --editor-font-size: 16px;
+  --editor-width: 46em;
+  --editor-padding-top: 56px;
+
+  --radius: 8px;
+  --transition: 140ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ---------------------------------------------------------------- light */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #ffffff;
+  --surface-1: #f7f7f9;
+  --surface-2: #ececed;
+  --surface-3: #e2e2e5;
+  --border: #e2e2e6;
+  --border-strong: #d0d0d5;
+
+  --text: #1d1d1f;
+  --text-muted: #6e6e73;
+  --text-faint: #a1a1a6;
+
+  --accent: #0066cc;
+  --accent-soft: rgba(0, 102, 204, 0.12);
+  --danger: #d0342c;
+  --warn: #b25000;
+  --caret: #0066cc;
+
+  --selection: rgba(0, 102, 204, 0.18);
+  --search-match: rgba(255, 214, 10, 0.45);
+  --search-match-border: rgba(180, 140, 0, 0.5);
+  --search-match-active: rgba(255, 159, 10, 0.6);
+
+  --code-bg: #f5f5f7;
+  --quote-border: #d2d2d7;
+  --mark-bg: #fff3a3;
+  --shadow: rgba(0, 0, 0, 0.12);
+
+  --syn-keyword: #ad3da4;
+  --syn-name: #1d1d1f;
+  --syn-function: #326d74;
+  --syn-constant: #0f68a0;
+  --syn-type: #703daa;
+  --syn-operator: #8f6f00;
+  --syn-string: #c41a16;
+  --syn-comment: #8a8a8e;
+}
+
+/* ----------------------------------------------------------------- dark */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #1c1c1e;
+  --surface-1: #232325;
+  --surface-2: #2c2c2e;
+  --surface-3: #38383a;
+  --border: #333336;
+  --border-strong: #48484a;
+
+  --text: #e8e8ea;
+  --text-muted: #98989d;
+  --text-faint: #6c6c70;
+
+  --accent: #4c9dff;
+  --accent-soft: rgba(76, 157, 255, 0.16);
+  --danger: #ff6961;
+  --warn: #ffb340;
+  --caret: #4c9dff;
+
+  --selection: rgba(76, 157, 255, 0.24);
+  --search-match: rgba(255, 214, 10, 0.28);
+  --search-match-border: rgba(255, 214, 10, 0.45);
+  --search-match-active: rgba(255, 159, 10, 0.45);
+
+  --code-bg: #262628;
+  --quote-border: #48484a;
+  --mark-bg: rgba(255, 214, 10, 0.28);
+  --shadow: rgba(0, 0, 0, 0.5);
+
+  --syn-keyword: #ff7ab2;
+  --syn-name: #e8e8ea;
+  --syn-function: #6bdfff;
+  --syn-constant: #6bb8ff;
+  --syn-type: #dabaff;
+  --syn-operator: #ffd479;
+  --syn-string: #ff8170;
+  --syn-comment: #7f8c98;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition: 0ms;
+  }
+}

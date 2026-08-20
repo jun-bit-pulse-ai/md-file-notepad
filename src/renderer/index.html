@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' file: data: https:; font-src 'self' data:;"
+    />
+    <title>Untitled</title>
+    <link rel="stylesheet" href="renderer.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" id="sidebar"></aside>
+      <main class="main">
+        <div class="titlebar-drag"></div>
+        <div class="editor-host" id="editor"></div>
+        <footer class="statusbar" id="statusbar"></footer>
+      </main>
+    </div>
+
+    <div class="toast-host" id="toasts"></div>
+
+    <dialog class="sheet" id="shortcuts-sheet">
+      <h2>Keyboard Shortcuts</h2>
+      <div class="shortcut-grid" id="shortcut-grid"></div>
+      <form method="dialog"><button class="sheet-close">Done</button></form>
+    </dialog>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>

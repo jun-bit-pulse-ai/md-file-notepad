@@ -1,0 +1,59 @@
+appId: com.notepadmd.app
+productName: Notepad MD
+copyright: MIT Licensed
+
+directories:
+  output: dist
+  buildResources: build-resources
+
+# Only ship what the app actually loads at runtime.
+files:
+  - src/main/**/*
+  - src/shared/**/*
+  - build/**/*
+  - package.json
+  - '!**/*.map'
+
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  darkModeSupport: true
+  # Chromium needs the hardened-runtime exceptions below to JIT.
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build-resources/entitlements.mac.plist
+  entitlementsInherit: build-resources/entitlements.mac.plist
+  extendInfo:
+    NSHumanReadableCopyright: MIT Licensed
+    # Lets the app appear in "Open With" and own .md double-clicks.
+    CFBundleDocumentTypes:
+      - CFBundleTypeName: Markdown Document
+        CFBundleTypeRole: Editor
+        LSHandlerRank: Owner
+        LSItemContentTypes:
+          - net.daringfireball.markdown
+          - public.plain-text
+        CFBundleTypeExtensions:
+          - md
+          - markdown
+          - mdown
+          - mkd
+          - mkdn
+          - mdwn
+          - text
+          - txt
+
+dmg:
+  title: ${productName}
+  contents:
+    - x: 140
+      y: 200
+      type: file
+    - x: 400
+      y: 200
+      type: link
+      path: /Applications
