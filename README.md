@@ -47,6 +47,29 @@ pane and no preview toggle: one editable, rendered document.
 - Reloads the document when it changes on disk (unless you have unsaved edits)
 - Export to Word (.docx), HTML and PDF
 
+## Keyboard shortcuts
+
+| | | | |
+| --- | --- | --- | --- |
+| `⌘B` | Bold | `⌘/` | Toggle source mode |
+| `⌘I` | Italic | `⇧⌘F` | Focus mode |
+| `⌘E` | Inline code | `⇧⌘T` | Typewriter mode |
+| `⇧⌘X` | Strikethrough | `⇧⌘1` | Outline sidebar |
+| `⇧⌘H` | Highlight | `⇧⌘2` | File sidebar |
+| `⌘K` | Insert link | `⌘F` | Find |
+| `⌘1`–`⌘6` | Heading level | `⌥⌘F` | Find and replace |
+| `⌘0` | Paragraph | `⌘+` / `⌘-` | Zoom text |
+| `⇧⌘8` | Bullet list | `⌘N` | New document |
+| `⇧⌘7` | Numbered list | `⌘O` | Open |
+| `⇧⌘9` | Task list | `⌘S` | Save |
+| `⇧⌘D` | Toggle task done | `⇧⌘S` | Save As |
+| `⇧⌘Q` | Blockquote | `⌥⌘R` | Reveal in Finder |
+| `⌥⌘C` | Code block | `⇧⌘V` | Paste as plain text |
+| `⌥⌘T` | Table | `⇧⌘C` | Copy as Markdown |
+| `⌥⌘H` | Horizontal rule | | |
+
+The same list is available in the app under Help ▸ Keyboard Shortcuts.
+
 ## Getting started
 
 ```bash
@@ -75,14 +98,28 @@ For a local unpackaged build, `npm run dist:dir` is faster.
 ```bash
 npm run watch   # rebuild the renderer on change
 npm run dev     # build once, then launch
-npm test        # unit tests
+npm test        # 142 unit tests
 npm run smoke   # boot the real app headlessly and screenshot it
 ```
 
+The unit tests cover outline extraction, document statistics, the formatting
+commands, file I/O, the preference store, the spell-check menu, and the
+Markdown-to-Word mapping. They run on plain Node with no browser or Electron.
+
 `npm run smoke` launches the actual main process, preload and renderer under a
 virtual display, asserts the editor mounted with no console errors, and writes
-a PNG. It takes `--doc`, `--out`, `--scroll` and `--theme` flags. On a Mac with
-a display, use `npm run smoke:mac`.
+a PNG. Flags:
+
+| Flag | Effect |
+| ---- | ------ |
+| `--out <path>` | Where to write the screenshot |
+| `--scroll <px>` | Scroll before capturing, to inspect content below the fold |
+| `--theme light\|dark` | Force a theme instead of following the OS |
+| `--export-docx <path>` | Run the Word export end to end and write the file |
+| `--settle <ms>` | Wait longer before capturing |
+
+A Markdown file passed as a positional argument is opened on launch. On a Mac
+with a display, use `npm run smoke:mac`.
 
 ## How it works
 
