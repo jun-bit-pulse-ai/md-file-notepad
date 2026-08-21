@@ -1,0 +1,4 @@
+{
+  "//": "Marks the renderer tree as ESM so Node (and the test runner) can import these modules directly. The main process stays CommonJS.",
+  "type": "module"
+}

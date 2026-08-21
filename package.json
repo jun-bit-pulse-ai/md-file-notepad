@@ -1,0 +1,43 @@
+{
+  "name": "md-file-notepad",
+  "productName": "Notepad MD",
+  "version": "0.1.0",
+  "description": "A live-preview Markdown reader and editor for macOS",
+  "license": "MIT",
+  "private": true,
+  "main": "src/main/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron . --dev",
+    "test": "node --test test/*.test.js test/*.test.mjs",
+    "smoke": "npm run build && xvfb-run -a electron --no-sandbox scripts/smoke.js",
+    "smoke:mac": "npm run build && electron scripts/smoke.js",
+    "dist": "npm run build && electron-builder --mac",
+    "dist:dir": "npm run build && electron-builder --mac --dir"
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.0",
+    "jszip": "^3.10.1"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.18.6",
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/language-data": "^6.5.1",
+    "@codemirror/search": "^6.5.10",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.5",
+    "@lezer/highlight": "^1.2.1",
+    "@lezer/markdown": "^1.4.2",
+    "docx": "^9.7.1",
+    "katex": "^0.16.22",
+    "markdown-it": "^14.1.0",
+    "turndown": "^7.2.0"
+  }
+}
