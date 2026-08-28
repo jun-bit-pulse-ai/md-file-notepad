@@ -144,6 +144,17 @@ a PNG. Flags:
 A Markdown file passed as a positional argument is opened on launch. On a Mac
 with a display, use `npm run smoke:mac`.
 
+### Claude Code on the web
+
+`.claude/hooks/session-start.sh` runs when a web session starts: it installs
+dependencies, fetches the Electron binary (npm's postinstall does not reliably
+leave it in place), and builds the renderer bundle, which is gitignored. That
+means `npm test` and `npm run smoke` work immediately in a fresh session
+rather than after a manual setup step.
+
+It runs synchronously, so the session waits for setup to finish, and no-ops
+outside remote sessions via `$CLAUDE_CODE_REMOTE`.
+
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on every push to `main` and every pull request:
