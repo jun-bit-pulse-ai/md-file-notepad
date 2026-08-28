@@ -1,5 +1,7 @@
 # Notepad MD
 
+[![CI](https://github.com/jun-bit-pulse-ai/md-file-notepad/actions/workflows/ci.yml/badge.svg)](https://github.com/jun-bit-pulse-ai/md-file-notepad/actions/workflows/ci.yml)
+
 A live-preview Markdown reader and editor for macOS.
 
 You write plain Markdown and it styles itself as you type — headings grow,
@@ -141,6 +143,20 @@ a PNG. Flags:
 
 A Markdown file passed as a positional argument is opened on launch. On a Mac
 with a display, use `npm run smoke:mac`.
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every push to `main` and every pull request:
+
+| Job | Runner | What it proves |
+| --- | ------ | -------------- |
+| Unit tests | Ubuntu | The 174 tests pass and the renderer bundle builds |
+| Headless smoke test | Ubuntu | The real app boots under Xvfb with no console errors, Quick Open and Preferences open and work, and a `.docx` export round-trips |
+| Package macOS app | macOS | `electron-builder` assembles a real `.app` with an executable, an `Info.plist`, and the `.md` file association intact |
+
+The smoke job uploads its screenshot and exported document as artifacts, so a
+failure can be inspected rather than guessed at. The macOS job builds unpacked
+(`--dir`) and skips code signing, so it needs no certificates.
 
 ## How it works
 

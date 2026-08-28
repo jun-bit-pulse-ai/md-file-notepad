@@ -1,0 +1,184 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes the in-flight run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # The tests need no Electron binary, so skip the ~100 MB download.
+      - name: Install dependencies
+        run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build renderer bundle
+        run: npm run build
+
+  smoke:
+    name: Headless smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # Electron's binary is large and version-stable; cache it between runs.
+      - name: Cache Electron binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/electron
+          key: electron-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Build renderer bundle
+        run: npm run build
+
+      # A document with headings, a table, math, tasks and code, so the
+      # smoke report exercises every decoration path.
+      - name: Create fixture documents
+        run: |
+          mkdir -p /tmp/fixtures/notes
+          cat > /tmp/fixtures/demo.md <<'EOF'
+          # Project Notes
+
+          A **live preview** editor with *inline* styling, `code`, ==highlight==
+          and a [link](https://commonmark.org).
+
+          ## Tasks
+
+          - [x] Wire up the editor
+          - [ ] Ship the DMG
+
+          ## Table
+
+          | Feature | Done |
+          | ------- | :--: |
+          | Export  | Yes  |
+
+          ## Code
+
+          ```javascript
+          const greet = (name) => `Hello, ${name}!`
+          ```
+
+          ## Math
+
+          Inline $E = mc^2$ and a block:
+
+          $$
+          \int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+          $$
+
+          ---
+
+          > A blockquote to finish.
+          EOF
+          printf '# Ideas\n\nMore text.\n' > /tmp/fixtures/ideas.md
+          printf '# Meeting\n\nNotes.\n' > /tmp/fixtures/notes/meeting.md
+
+      # Boots the real main process, preload and renderer, drives Quick Open
+      # and Preferences, and exports a .docx end to end. Exits non-zero on
+      # any renderer console error.
+      - name: Run smoke test
+        run: |
+          xvfb-run -a ./node_modules/electron/dist/electron --no-sandbox \
+            scripts/smoke.js \
+            --out /tmp/fixtures/screenshot.png \
+            --export-docx /tmp/fixtures/export.docx \
+            --exercise-ui \
+            /tmp/fixtures/demo.md
+
+      - name: Verify the exported document is a real Word file
+        run: |
+          test -s /tmp/fixtures/export.docx
+          # .docx is a zip; the magic bytes are the cheapest honest check.
+          head -c 2 /tmp/fixtures/export.docx | grep -q 'PK'
+          echo "export.docx: $(wc -c < /tmp/fixtures/export.docx) bytes"
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-output
+          path: |
+            /tmp/fixtures/screenshot.png
+            /tmp/fixtures/export.docx
+          if-no-files-found: warn
+          retention-days: 7
+
+  package:
+    name: Package macOS app
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Cache Electron binary
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/electron
+          key: electron-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Unpacked .app only: it proves the app assembles without paying for
+      # DMG creation, and needs no signing identity.
+      - name: Build unpacked .app
+        run: npm run dist:dir
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Verify the bundle
+        run: |
+          APP=$(find dist -maxdepth 2 -name '*.app' -print -quit)
+          if [ -z "$APP" ]; then
+            echo "No .app produced by electron-builder"
+            ls -R dist || true
+            exit 1
+          fi
+          echo "Built: $APP"
+          EXEC=$(find "$APP/Contents/MacOS" -type f -perm +111 -print -quit)
+          test -n "$EXEC" || { echo "No executable in bundle"; exit 1; }
+          echo "Executable: $EXEC"
+          test -f "$APP/Contents/Info.plist" || { echo "No Info.plist"; exit 1; }
+          # The .md file association is what makes double-click-to-open work.
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleDocumentTypes:0:CFBundleTypeName' \
+            "$APP/Contents/Info.plist"
+          du -sh "$APP"
