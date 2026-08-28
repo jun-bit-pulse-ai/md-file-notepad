@@ -77,6 +77,51 @@ app.whenReady().then(() => {
       }))()
     `)
 
+// Optionally drive the new UI surfaces and report what opened.
+    if (args.includes('--exercise-ui')) {
+      win.webContents.send('menu:command', 'file:quick-open')
+      await new Promise((resolve) => setTimeout(resolve, 1200))
+      report.paletteOpen = await win.webContents.executeJavaScript(
+        `!document.getElementById('palette').hidden`
+      )
+      report.paletteResults = await win.webContents.executeJavaScript(
+        `document.querySelectorAll('.palette-item').length`
+      )
+      // Type a query and confirm it filters.
+      await win.webContents.executeJavaScript(`
+        (() => {
+          const input = document.querySelector('.palette-input')
+          input.value = 'demo'
+          input.dispatchEvent(new Event('input', { bubbles: true }))
+        })()
+      `)
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      report.paletteFiltered = await win.webContents.executeJavaScript(
+        `document.querySelectorAll('.palette-item').length`
+      )
+      report.paletteHighlights = await win.webContents.executeJavaScript(
+        `document.querySelectorAll('.palette-match').length`
+      )
+      if (!args.includes('--keep-palette')) {
+        await win.webContents.executeJavaScript(
+          `document.querySelector('.palette-backdrop').click()`
+        )
+      }
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      // Keeping the palette up for a screenshot means not stacking prefs on it.
+      if (!args.includes('--keep-palette')) {
+      win.webContents.send('menu:command', 'preferences')
+      await new Promise((resolve) => setTimeout(resolve, 800))
+      report.prefsOpen = await win.webContents.executeJavaScript(
+        `document.getElementById('prefs-sheet').open === true`
+      )
+      report.prefsControls = await win.webContents.executeJavaScript(
+        `document.querySelectorAll('.prefs-row').length`
+      )
+      }
+    }
+
     // Force a theme for screenshots; by default the app follows the OS.
     const theme = flag('theme', '')
     if (theme) {

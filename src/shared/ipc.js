@@ -17,6 +17,7 @@ const IPC = {
   SPELLCHECK_SET: 'spellcheck:set',
   FILE_REVEAL: 'file:reveal',
   FILE_LIST_DIR: 'file:list-dir',
+  FILE_WALK_DIR: 'file:walk-dir',
   FILE_READ: 'file:read',
   RECENT_LIST: 'recent:list',
   RECENT_CLEAR: 'recent:clear',
