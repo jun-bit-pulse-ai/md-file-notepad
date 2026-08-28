@@ -84,6 +84,66 @@ async function listDirectory(dirPath) {
   return { path: dirPath, entries: [...folders, ...files] }
 }
 
+/** Directories never worth walking for a document picker. */
+const SKIP_DIRECTORIES = new Set([
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  'out',
+  'coverage',
+  'vendor',
+  '__pycache__',
+])
+
+/**
+ * Recursively collects markdown files under `root` for Quick Open.
+ *
+ * Bounded on both depth and count: a picker over someone's home folder
+ * should degrade to "the first N files" rather than stat the whole disk.
+ * Returns paths relative to the root, which is what the palette displays.
+ */
+async function walkDirectory(root, { maxDepth = 6, maxEntries = 2000 } = {}) {
+  const files = []
+  let truncated = false
+
+  async function walk(dir, depth) {
+    if (depth > maxDepth || files.length >= maxEntries) return
+    let entries
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true })
+    } catch {
+      return // unreadable directory; skip rather than fail the whole walk
+    }
+
+    const directories = []
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue
+      if (files.length >= maxEntries) {
+        truncated = true
+        return
+      }
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        if (!SKIP_DIRECTORIES.has(entry.name)) directories.push(full)
+      } else if (entry.isFile() && isMarkdownPath(entry.name)) {
+        files.push({
+          path: full,
+          name: entry.name,
+          relativePath: path.relative(root, full),
+        })
+      }
+    }
+
+    // Files at this level first, then descend — shallow results rank higher.
+    for (const child of directories) await walk(child, depth + 1)
+  }
+
+  await walk(root, 0)
+  files.sort((a, b) => a.relativePath.localeCompare(b.relativePath, undefined, { numeric: true }))
+  return { root, files, truncated }
+}
+
 /**
  * Watches the open file for external edits (another editor, git checkout).
  * Returns a disposer. Uses a debounce because editors often touch a file
@@ -135,6 +195,7 @@ module.exports = {
   listDirectory,
   readDocument,
   suggestFileName,
+  walkDirectory,
   watchFile,
   writeDocument,
 }

@@ -10,6 +10,7 @@ const DEFAULTS = {
   fontSize: 16,
   editorWidth: 'normal', // 'narrow' | 'normal' | 'wide' | 'full'
   spellcheck: true,
+  autosave: false,
   recentFiles: [],
   windowBounds: { width: 1080, height: 760 },
 }

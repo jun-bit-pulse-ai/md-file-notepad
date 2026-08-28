@@ -36,6 +36,8 @@ pane and no preview toggle: one editable, rendered document.
 - Focus mode dims everything but the current paragraph (`⇧⌘F`)
 - Typewriter mode keeps the caret centred (`⇧⌘T`)
 - Word count, character count and reading time in the status bar
+- Quick Open (`⌘P`) fuzzy-searches every Markdown file under the current
+  document's folder
 
 **macOS integration**
 
@@ -46,6 +48,9 @@ pane and no preview toggle: one editable, rendered document.
 - Open Recent, `.md` file associations, and drag-and-drop to open
 - Reloads the document when it changes on disk (unless you have unsaved edits)
 - Export to Word (.docx), HTML and PDF
+- Preferences sheet (`⌘,`) for appearance, text width, font size, spell
+  check and autosave
+- Optional autosave, a couple of seconds after you stop typing
 
 ## Keyboard shortcuts
 
@@ -60,6 +65,7 @@ pane and no preview toggle: one editable, rendered document.
 | `⌘1`–`⌘6` | Heading level | `⌥⌘F` | Find and replace |
 | `⌘0` | Paragraph | `⌘+` / `⌘-` | Zoom text |
 | `⇧⌘8` | Bullet list | `⌘N` | New document |
+| `⌘P` | Quick Open | `⌘,` | Preferences |
 | `⇧⌘7` | Numbered list | `⌘O` | Open |
 | `⇧⌘9` | Task list | `⌘S` | Save |
 | `⇧⌘D` | Toggle task done | `⇧⌘S` | Save As |
@@ -69,6 +75,19 @@ pane and no preview toggle: one editable, rendered document.
 | `⌥⌘H` | Horizontal rule | | |
 
 The same list is available in the app under Help ▸ Keyboard Shortcuts.
+
+<p align="center">
+  <img src="docs/screenshot-quick-open.png" alt="Quick Open filtering files" width="880">
+</p>
+
+### Quick Open
+
+`⌘P` searches every Markdown file under the current document's folder, matching
+on a subsequence: `srclp` finds `src/renderer/editor/livePreview.js`. Ranking
+favours consecutive runs, word starts and the filename over the directory path,
+so the obvious match lands first. The walk skips `node_modules`, `.git` and
+friends, and is bounded on both depth and file count so a huge folder degrades
+to "the first N files" instead of stalling.
 
 ## Getting started
 
@@ -98,13 +117,13 @@ For a local unpackaged build, `npm run dist:dir` is faster.
 ```bash
 npm run watch   # rebuild the renderer on change
 npm run dev     # build once, then launch
-npm test        # 142 unit tests
+npm test        # 174 unit tests
 npm run smoke   # boot the real app headlessly and screenshot it
 ```
 
 The unit tests cover outline extraction, document statistics, the formatting
-commands, file I/O, the preference store, the spell-check menu, and the
-Markdown-to-Word mapping. They run on plain Node with no browser or Electron.
+commands, file I/O, the preference store, the spell-check menu, fuzzy file
+matching, the recursive file walk, and the Markdown-to-Word mapping. They run on plain Node with no browser or Electron.
 
 `npm run smoke` launches the actual main process, preload and renderer under a
 virtual display, asserts the editor mounted with no console errors, and writes
@@ -117,6 +136,8 @@ a PNG. Flags:
 | `--theme light\|dark` | Force a theme instead of following the OS |
 | `--export-docx <path>` | Run the Word export end to end and write the file |
 | `--settle <ms>` | Wait longer before capturing |
+| `--exercise-ui` | Drive Quick Open and Preferences, and report what opened |
+| `--keep-palette` | Leave Quick Open on screen (for screenshots) |
 
 A Markdown file passed as a positional argument is opened on launch. On a Mac
 with a display, use `npm run smoke:mac`.
@@ -139,7 +160,8 @@ src/renderer/   UI (CodeMirror 6)
     modes.js        Focus and typewriter modes
   lib/            Pure logic: outline, stats, Markdown rendering, export
     docx.js       Markdown-to-Word conversion
-  ui/             Sidebar and status bar
+    fuzzy.js      Subsequence matching and ranking for Quick Open
+  ui/             Sidebar, status bar, Quick Open palette, preferences
 ```
 
 The live preview works by decorating the editable text rather than rendering a

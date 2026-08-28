@@ -25,6 +25,7 @@ const {
   listDirectory,
   readDocument,
   suggestFileName,
+  walkDirectory,
   watchFile,
   writeDocument,
 } = require('./files.js')
@@ -427,6 +428,14 @@ function registerIpc() {
       return await listDirectory(dirPath)
     } catch (err) {
       return { path: dirPath, entries: [], error: err.message }
+    }
+  })
+
+  ipcMain.handle(IPC.FILE_WALK_DIR, async (_event, dirPath) => {
+    try {
+      return await walkDirectory(dirPath)
+    } catch (err) {
+      return { root: dirPath, files: [], truncated: false, error: err.message }
     }
   })
 

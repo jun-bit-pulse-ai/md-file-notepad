@@ -23,6 +23,8 @@ const api = {
   setSpellcheck: (enabled) => ipcRenderer.invoke(IPC.SPELLCHECK_SET, enabled),
   revealInFinder: (filePath) => ipcRenderer.invoke(IPC.FILE_REVEAL, filePath),
   listDirectory: (dirPath) => ipcRenderer.invoke(IPC.FILE_LIST_DIR, dirPath),
+  /** Recursive markdown listing, for the Quick Open palette. */
+  walkDirectory: (dirPath) => ipcRenderer.invoke(IPC.FILE_WALK_DIR, dirPath),
 
   recentFiles: () => ipcRenderer.invoke(IPC.RECENT_LIST),
   clearRecentFiles: () => ipcRenderer.invoke(IPC.RECENT_CLEAR),

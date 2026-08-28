@@ -6,6 +6,7 @@ const SHORTCUTS = [
     items: [
       ['⌘N', 'New document'],
       ['⌘O', 'Open…'],
+      ['⌘P', 'Quick Open'],
       ['⌘S', 'Save'],
       ['⇧⌘S', 'Save As…'],
       ['⌥⌘R', 'Reveal in Finder'],
@@ -47,6 +48,7 @@ const SHORTCUTS = [
       ['⇧⌘2', 'File sidebar'],
       ['⌘F', 'Find'],
       ['⌘+ / ⌘-', 'Zoom text'],
+      ['⌘,', 'Preferences'],
     ],
   },
 ]

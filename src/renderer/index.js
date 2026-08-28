@@ -28,6 +28,8 @@ import {
   toggleTaskDone,
   toggleTaskList,
 } from './editor/commands.js'
+import { Palette } from './ui/palette.js'
+import { Preferences } from './ui/preferences.js'
 import { Sidebar } from './ui/sidebar.js'
 import { StatusBar } from './ui/statusbar.js'
 import { buildHtmlDocument } from './lib/export.js'
@@ -49,6 +51,8 @@ let prefs = {}
 let view
 let sidebar
 let statusBar
+let palette
+let preferences
 
 const EDITOR_WIDTHS = {
   narrow: '34em',
@@ -67,6 +71,12 @@ async function boot() {
   })
   statusBar = new StatusBar(document.getElementById('statusbar'), {
     onToggleMode: toggleMode,
+  })
+  palette = new Palette(document.getElementById('palette'), {
+    onOpenFile: (filePath) => openPath(filePath),
+  })
+  preferences = new Preferences(document.getElementById('prefs-sheet'), {
+    onChange: applyPreferenceChange,
   })
 
   view = createEditor({
@@ -106,6 +116,29 @@ function handleChange(text) {
     api.reportDocumentState({ dirty, filePath: doc.filePath })
   }
   scheduleOutlineUpdate()
+  scheduleAutosave()
+}
+
+/** Delay before an autosave fires, measured from the last keystroke. */
+const AUTOSAVE_DELAY = 2000
+let autosaveTimer = null
+
+/**
+ * Autosave only touches documents that already live on disk — an Untitled
+ * buffer would pop a save dialog mid-sentence, which is not "auto".
+ */
+function scheduleAutosave() {
+  if (autosaveTimer) clearTimeout(autosaveTimer)
+  if (!prefs.autosave || !doc.filePath) return
+  autosaveTimer = setTimeout(() => {
+    autosaveTimer = null
+    if (doc.dirty && doc.filePath) save({ silent: true })
+  }, AUTOSAVE_DELAY)
+}
+
+function cancelAutosave() {
+  if (autosaveTimer) clearTimeout(autosaveTimer)
+  autosaveTimer = null
 }
 
 function handleSelectionChange(state) {
@@ -177,7 +210,8 @@ async function confirmDiscardIfDirty() {
   return true
 }
 
-async function save() {
+async function save({ silent = false } = {}) {
+  cancelAutosave()
   const content = view.state.doc.toString()
   const result = await api.save({ content, filePath: doc.filePath })
   if (result?.ok) {
@@ -192,7 +226,7 @@ async function save() {
       sidebar.setCurrentFile(doc.filePath, doc.directory)
     }
     api.reportDocumentState({ dirty: false, filePath: doc.filePath })
-    statusBar.flash('Saved')
+    if (!silent) statusBar.flash('Saved')
     return true
   }
   if (result && !result.canceled && result.error) {
@@ -308,6 +342,60 @@ async function toggleSpellcheck() {
   statusBar.flash(next ? 'Spell check on' : 'Spell check off')
 }
 
+/**
+ * Quick Open lists Markdown files under the current document's folder.
+ * With nothing open there is no folder to search, so say so rather than
+ * showing an empty palette.
+ */
+async function openQuickOpen() {
+  if (!doc.directory) {
+    statusBar.flash('Open a file first to browse its folder', 'warn')
+    return
+  }
+  const result = await api.walkDirectory(doc.directory)
+  if (result?.error) {
+    statusBar.flash(result.error, 'error')
+    return
+  }
+  palette.open(result.files, { truncated: result.truncated })
+}
+
+/** Applies one preference change from the Preferences sheet. */
+function applyPreferenceChange(key, value) {
+  switch (key) {
+    case 'theme':
+      setTheme(value)
+      break
+    case 'editorWidth':
+      setEditorWidth(value)
+      break
+    case 'fontSize':
+      prefs.fontSize = value
+      document.documentElement.style.setProperty('--editor-font-size', `${value}px`)
+      api.setPrefs({ fontSize: value })
+      break
+    case 'spellcheck':
+      prefs.spellcheck = value
+      setSpellcheck(view, value)
+      api.setSpellcheck(value)
+      api.setPrefs({ spellcheck: value })
+      break
+    case 'autosave':
+      prefs.autosave = value
+      api.setPrefs({ autosave: value })
+      if (value) scheduleAutosave()
+      else cancelAutosave()
+      break
+    case 'focusMode':
+    case 'typewriterMode':
+      if (prefs[key] !== value) toggleMode(key)
+      break
+    default:
+      prefs[key] = value
+      api.setPrefs({ [key]: value })
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* View modes                                                          */
 /* ------------------------------------------------------------------ */
@@ -372,6 +460,7 @@ const MENU_ACTIONS = {
   'file:export-docx': () => exportDocx(),
   'file:reveal': () => doc.filePath && api.revealInFinder(doc.filePath),
   'file:new': () => api.newFile(),
+  'file:quick-open': () => openQuickOpen(),
 
   'edit:find': () => openSearchPanel(view),
   'edit:replace': () => openSearchPanel(view),
@@ -414,7 +503,7 @@ const MENU_ACTIONS = {
 
   'help:shortcuts': () => document.getElementById('shortcuts-sheet').showModal(),
   'help:reference': () => loadReferenceDocument(),
-  preferences: () => document.getElementById('shortcuts-sheet').showModal(),
+  preferences: () => preferences.open(prefs),
 }
 
 function persistSidebar(mode) {

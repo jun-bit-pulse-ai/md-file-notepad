@@ -66,6 +66,11 @@ function buildMenu({ store, send, onOpenFile, onOpenRecent, onClearRecent, onNew
         accelerator: 'CmdOrCtrl+O',
         click: () => onOpenFile(),
       },
+      {
+        label: 'Quick Open…',
+        accelerator: 'CmdOrCtrl+P',
+        click: cmd('file:quick-open'),
+      },
       { label: 'Open Recent', submenu: recentItems },
       { type: 'separator' },
       {
