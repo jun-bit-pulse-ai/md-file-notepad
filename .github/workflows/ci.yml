@@ -62,6 +62,12 @@ jobs:
       - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
+      # npm's postinstall does not reliably leave the binary in place (it is
+      # skipped outright in some environments), and install.js is a no-op when
+      # the download is already cached.
+      - name: Ensure the Electron binary is present
+        run: node node_modules/electron/install.js
+
       - name: Build renderer bundle
         run: npm run build
 
@@ -113,7 +119,11 @@ jobs:
       # any renderer console error.
       - name: Run smoke test
         run: |
-          xvfb-run -a ./node_modules/electron/dist/electron --no-sandbox \
+          # Ask the package where its binary is rather than hardcoding the
+          # path — the layout differs by platform and install method.
+          ELECTRON_BIN="$(node -p "require('electron')")"
+          test -x "$ELECTRON_BIN" || { echo "Electron binary missing at $ELECTRON_BIN"; exit 1; }
+          xvfb-run -a "$ELECTRON_BIN" --no-sandbox \
             scripts/smoke.js \
             --out /tmp/fixtures/screenshot.png \
             --export-docx /tmp/fixtures/export.docx \
