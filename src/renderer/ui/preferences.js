@@ -162,7 +162,8 @@ class Preferences {
       } else if (field.type === 'range') {
         const numeric = Number(value) || 16
         input.value = String(numeric)
-        if (readout) readout.textContent = field.format ? field.format(numeric) : String(numeric)
+        if (readout)
+          readout.textContent = field.format ? field.format(numeric) : String(numeric)
       } else {
         input.value = value ?? field.options[0][0]
       }

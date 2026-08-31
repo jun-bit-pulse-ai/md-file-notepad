@@ -88,10 +88,7 @@ test('inline code round-trips', () => {
 })
 
 test('bold applies to every cursor in a multi-selection', () => {
-  const view = makeView(
-    'one two',
-    EditorSelection.create([rangeOf(0, 3), rangeOf(4, 7)])
-  )
+  const view = makeView('one two', EditorSelection.create([rangeOf(0, 3), rangeOf(4, 7)]))
   toggleBold(view)
   assert.equal(view.state.doc.toString(), '**one** **two**')
 })

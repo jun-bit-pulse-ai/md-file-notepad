@@ -40,7 +40,6 @@ const HEADING_LEVELS = [
 const MONO_FONT = 'Consolas'
 const BODY_FONT = 'Calibri'
 const CODE_FILL = 'F4F4F6'
-const QUOTE_COLOR = '5A5A62'
 const RULE_COLOR = 'D0D0D5'
 const HIGHLIGHT_FILL = 'FFF3A3'
 const LINK_COLOR = '0563C1'
@@ -86,25 +85,55 @@ function inlineRuns(children) {
 
   for (const token of children) {
     switch (token.type) {
-      case 'strong_open': depth.bold++; break
-      case 'strong_close': depth.bold--; break
-      case 'em_open': depth.italic++; break
-      case 'em_close': depth.italic--; break
-      case 's_open': depth.strike++; break
-      case 's_close': depth.strike--; break
-      case 'mark_open': depth.highlight++; break
-      case 'mark_close': depth.highlight--; break
+      case 'strong_open':
+        depth.bold++
+        break
+      case 'strong_close':
+        depth.bold--
+        break
+      case 'em_open':
+        depth.italic++
+        break
+      case 'em_close':
+        depth.italic--
+        break
+      case 's_open':
+        depth.strike++
+        break
+      case 's_close':
+        depth.strike--
+        break
+      case 'mark_open':
+        depth.highlight++
+        break
+      case 'mark_close':
+        depth.highlight--
+        break
 
-      case 'link_open': link = token.attrGet('href') || null; break
-      case 'link_close': link = null; break
+      case 'link_open':
+        link = token.attrGet('href') || null
+        break
+      case 'link_close':
+        link = null
+        break
 
-      case 'text': push({ text: token.content }); break
-      case 'code_inline': push({ text: token.content, code: true }); break
+      case 'text':
+        push({ text: token.content })
+        break
+      case 'code_inline':
+        push({ text: token.content, code: true })
+        break
       // Word has no KaTeX; keep the source legible in a monospace run.
-      case 'math_inline': push({ text: token.content, code: true }); break
+      case 'math_inline':
+        push({ text: token.content, code: true })
+        break
 
-      case 'softbreak': push({ text: ' ' }); break
-      case 'hardbreak': push({ break: true }); break
+      case 'softbreak':
+        push({ text: ' ' })
+        break
+      case 'hardbreak':
+        push({ break: true })
+        break
 
       case 'image':
         push({
@@ -148,9 +177,15 @@ function parseTable(tokens, start) {
     if (token.type === 'table_close') break
 
     switch (token.type) {
-      case 'thead_open': inHeader = true; break
-      case 'thead_close': inHeader = false; break
-      case 'tr_open': current = []; break
+      case 'thead_open':
+        inHeader = true
+        break
+      case 'thead_close':
+        inHeader = false
+        break
+      case 'tr_open':
+        current = []
+        break
       case 'tr_close':
         if (current) (inHeader ? header : rows).push(current)
         current = null
@@ -269,8 +304,12 @@ function parseBlocks(markdown) {
         pendingItem = null
         break
 
-      case 'blockquote_open': quoteDepth++; break
-      case 'blockquote_close': quoteDepth--; break
+      case 'blockquote_open':
+        quoteDepth++
+        break
+      case 'blockquote_close':
+        quoteDepth--
+        break
 
       case 'fence':
       case 'code_block':
@@ -327,7 +366,8 @@ function detectImageType(data) {
 /** Fits an image inside the page's text column, never enlarging it. */
 function scaleImage(width, height, maxInches = MAX_IMAGE_INCHES) {
   const maxWidth = maxInches * DPI
-  if (!width || !height) return { width: Math.round(maxWidth), height: Math.round(maxWidth * 0.6) }
+  if (!width || !height)
+    return { width: Math.round(maxWidth), height: Math.round(maxWidth * 0.6) }
   if (width <= maxWidth) return { width: Math.round(width), height: Math.round(height) }
   const ratio = maxWidth / width
   return { width: Math.round(width * ratio), height: Math.round(height * ratio) }
@@ -347,7 +387,7 @@ async function resolveImages(blocks, loadImage) {
       resolved.push(block)
       continue
     }
-    let loaded = null
+    let loaded
     try {
       loaded = await loadImage(block.src)
     } catch {
@@ -449,22 +489,23 @@ function buildTable(block) {
       rows.push(
         new TableRow({
           tableHeader: true,
-          children: headerRow.map((runs, index) =>
-            new TableCell({
-              shading: { type: ShadingType.CLEAR, fill: CODE_FILL },
-              margins: { top: 80, bottom: 80, left: 120, right: 120 },
-              children: [
-                new Paragraph({
-                  alignment:
-                    block.alignments[index] === 'center'
-                      ? AlignmentType.CENTER
-                      : block.alignments[index] === 'right'
-                        ? AlignmentType.RIGHT
-                        : AlignmentType.LEFT,
-                  children: toChildren(runs.map((run) => ({ ...run, bold: true }))),
-                }),
-              ],
-            })
+          children: headerRow.map(
+            (runs, index) =>
+              new TableCell({
+                shading: { type: ShadingType.CLEAR, fill: CODE_FILL },
+                margins: { top: 80, bottom: 80, left: 120, right: 120 },
+                children: [
+                  new Paragraph({
+                    alignment:
+                      block.alignments[index] === 'center'
+                        ? AlignmentType.CENTER
+                        : block.alignments[index] === 'right'
+                          ? AlignmentType.RIGHT
+                          : AlignmentType.LEFT,
+                    children: toChildren(runs.map((run) => ({ ...run, bold: true }))),
+                  }),
+                ],
+              })
           ),
         })
       )
@@ -503,26 +544,30 @@ function buildBlock(block) {
             ? { left: convertInchesToTwip(0.3 * block.indent) }
             : undefined,
         border: block.quote
-          ? { left: { style: BorderStyle.SINGLE, size: 12, color: RULE_COLOR, space: 12 } }
+          ? {
+              left: { style: BorderStyle.SINGLE, size: 12, color: RULE_COLOR, space: 12 },
+            }
           : undefined,
         children: toChildren(
-          block.quote
-            ? block.runs.map((run) => ({ ...run, italic: true }))
-            : block.runs
+          block.quote ? block.runs.map((run) => ({ ...run, italic: true })) : block.runs
         ),
         ...(block.quote ? { style: undefined } : {}),
       })
 
     case 'list-item': {
       const prefix =
-        block.checked === null
-          ? []
-          : [{ text: block.checked ? '☒ ' : '☐ ', code: false }]
+        block.checked === null ? [] : [{ text: block.checked ? '☒ ' : '☐ ', code: false }]
       const runs = [...prefix, ...block.runs]
       return new Paragraph({
         spacing: { after: 60 },
         ...(block.ordered
-          ? { numbering: { reference: 'md-ordered', level: block.level, instance: block.instance } }
+          ? {
+              numbering: {
+                reference: 'md-ordered',
+                level: block.level,
+                instance: block.instance,
+              },
+            }
           : { bullet: { level: block.level } }),
         children: toChildren(runs),
       })
@@ -549,7 +594,9 @@ function buildBlock(block) {
     case 'hr':
       return new Paragraph({
         spacing: { before: 200, after: 200 },
-        border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: RULE_COLOR, space: 1 } },
+        border: {
+          bottom: { style: BorderStyle.SINGLE, size: 6, color: RULE_COLOR, space: 1 },
+        },
         children: [],
       })
 
@@ -605,7 +652,10 @@ function buildDocument(blocks, { title = 'Untitled' } = {}) {
     numbering: NUMBERING_CONFIG,
     styles: {
       default: {
-        document: { run: { font: BODY_FONT, size: 22 }, paragraph: { spacing: { line: 300 } } },
+        document: {
+          run: { font: BODY_FONT, size: 22 },
+          paragraph: { spacing: { line: 300 } },
+        },
       },
       characterStyles: [
         {

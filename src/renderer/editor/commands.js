@@ -105,7 +105,9 @@ function mapSelectedLines(view, transform) {
   }
 
   if (!changes.length) return false
-  view.dispatch(state.update({ changes, scrollIntoView: true, userEvent: 'input.format' }))
+  view.dispatch(
+    state.update({ changes, scrollIntoView: true, userEvent: 'input.format' })
+  )
   return true
 }
 
@@ -231,7 +233,8 @@ function insertBlock(view, text, cursorOffset = null) {
     state.update({
       changes: { from: at, to: Math.max(at, range.to), insert },
       selection: {
-        anchor: at + (cursorOffset === null ? insert.length : prefix.length + cursorOffset),
+        anchor:
+          at + (cursorOffset === null ? insert.length : prefix.length + cursorOffset),
       },
       scrollIntoView: true,
       userEvent: 'input.format',
@@ -293,7 +296,11 @@ function insertCodeBlock(view, language = '') {
   const range = state.selection.main
   const selected = state.doc.sliceString(range.from, range.to)
   const body = selected || ''
-  return insertBlock(view, '```' + language + '\n' + body + '\n```\n', 3 + language.length)
+  return insertBlock(
+    view,
+    '```' + language + '\n' + body + '\n```\n',
+    3 + language.length
+  )
 }
 
 function insertHorizontalRule(view) {

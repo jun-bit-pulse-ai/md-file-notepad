@@ -72,7 +72,10 @@ test('camelCase humps count as word starts', () => {
 })
 
 test('an exact prefix of the filename wins', () => {
-  assert.equal(best('menu', ['src/main/menu.js', 'src/submenu-helper.js']), 'src/main/menu.js')
+  assert.equal(
+    best('menu', ['src/main/menu.js', 'src/submenu-helper.js']),
+    'src/main/menu.js'
+  )
 })
 
 test('shorter paths win when otherwise equal', () => {

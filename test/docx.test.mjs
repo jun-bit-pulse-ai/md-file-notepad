@@ -59,7 +59,10 @@ test('bullet lists become list items at the right level', () => {
   const blocks = parseBlocks('- one\n- two\n  - nested')
   const items = blocks.filter((b) => b.type === 'list-item')
   assert.equal(items.length, 3)
-  assert.deepEqual(items.map((i) => i.level), [0, 0, 1])
+  assert.deepEqual(
+    items.map((i) => i.level),
+    [0, 0, 1]
+  )
   assert.ok(items.every((i) => i.ordered === false))
 })
 
@@ -80,7 +83,10 @@ test('task items record their checked state', () => {
   const items = parseBlocks('- [x] done\n- [ ] open\n- plain').filter(
     (b) => b.type === 'list-item'
   )
-  assert.deepEqual(items.map((i) => i.checked), [true, false, null])
+  assert.deepEqual(
+    items.map((i) => i.checked),
+    [true, false, null]
+  )
 })
 
 test('the checkbox markup is not duplicated into the text', () => {
@@ -108,7 +114,11 @@ test('markdown inside a code block is not interpreted', () => {
 })
 
 test('horizontal rules become their own block', () => {
-  assert.deepEqual(typesOf(parseBlocks('a\n\n---\n\nb')), ['paragraph', 'hr', 'paragraph'])
+  assert.deepEqual(typesOf(parseBlocks('a\n\n---\n\nb')), [
+    'paragraph',
+    'hr',
+    'paragraph',
+  ])
 })
 
 test('tables capture header, rows and alignment', () => {
@@ -182,7 +192,10 @@ test('resolveImages embeds bytes for loadable images', async () => {
 })
 
 test('an unloadable image degrades to a caption instead of vanishing', async () => {
-  const blocks = await resolveImages(parseBlocks('![missing](nope.png)'), async () => null)
+  const blocks = await resolveImages(
+    parseBlocks('![missing](nope.png)'),
+    async () => null
+  )
   assert.equal(blocks[0].type, 'paragraph')
   assert.match(textOf(blocks[0].runs), /\[image: missing\]/)
 })

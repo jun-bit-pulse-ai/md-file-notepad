@@ -47,7 +47,11 @@ function normalizeLanguages(requested, available) {
  * Applies spell-checker preferences to a session, tolerating the platform
  * differences above. Returns what was actually applied.
  */
-function applySpellCheckerSettings(session, { enabled = true, languages } = {}, platform = process.platform) {
+function applySpellCheckerSettings(
+  session,
+  { enabled = true, languages } = {},
+  platform = process.platform
+) {
   const applied = { enabled: Boolean(enabled), languages: null }
 
   try {
@@ -123,9 +127,21 @@ function buildContextMenuTemplate(params = {}, handlers = {}) {
 
   if (isEditable) {
     template.push({ type: 'separator' })
-    template.push({ label: 'Bold', click: () => onCommand('format:bold'), enabled: hasSelection })
-    template.push({ label: 'Italic', click: () => onCommand('format:italic'), enabled: hasSelection })
-    template.push({ label: 'Inline Code', click: () => onCommand('format:code'), enabled: hasSelection })
+    template.push({
+      label: 'Bold',
+      click: () => onCommand('format:bold'),
+      enabled: hasSelection,
+    })
+    template.push({
+      label: 'Italic',
+      click: () => onCommand('format:italic'),
+      enabled: hasSelection,
+    })
+    template.push({
+      label: 'Inline Code',
+      click: () => onCommand('format:code'),
+      enabled: hasSelection,
+    })
     template.push({ label: 'Link…', click: () => onCommand('format:link') })
   }
 

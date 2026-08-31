@@ -59,7 +59,11 @@ function extractOutline(doc) {
     const fenceMatch = FENCE.exec(line)
     if (fence) {
       // Only a fence of the same character and at least equal length closes.
-      if (fenceMatch && fenceMatch[2][0] === fence[0] && fenceMatch[2].length >= fence.length) {
+      if (
+        fenceMatch &&
+        fenceMatch[2][0] === fence[0] &&
+        fenceMatch[2].length >= fence.length
+      ) {
         fence = null
       }
       continue
@@ -90,7 +94,9 @@ function extractOutline(doc) {
       // The heading belongs to the previous line, not the underline.
       const text = stripInline(rawText)
       if (previous && previous.line === i) continue
-      headings.push(makeHeading(level, text, i, lineStart - (lines[i - 1].length + 1), slugCounts))
+      headings.push(
+        makeHeading(level, text, i, lineStart - (lines[i - 1].length + 1), slugCounts)
+      )
       continue
     }
 
