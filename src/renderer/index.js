@@ -275,7 +275,8 @@ async function exportAs(kind) {
     katexCss: collectKatexCss(),
   })
   const payload = { html, defaultName: doc.fileName }
-  const result = kind === 'pdf' ? await api.exportPdf(payload) : await api.exportHtml(payload)
+  const result =
+    kind === 'pdf' ? await api.exportPdf(payload) : await api.exportHtml(payload)
   if (result?.ok) statusBar.flash(`Exported ${kind.toUpperCase()}`)
   else if (result?.error) statusBar.flash(result.error, 'error')
 }

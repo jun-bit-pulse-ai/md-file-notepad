@@ -16,13 +16,22 @@
     "smoke": "npm run build && xvfb-run -a electron --no-sandbox scripts/smoke.js",
     "smoke:mac": "npm run build && electron scripts/smoke.js",
     "dist": "npm run build && electron-builder --mac",
-    "dist:dir": "npm run build && electron-builder --mac --dir"
+    "dist:dir": "npm run build && electron-builder --mac --dir",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "electron": "^43.4.1",
     "electron-builder": "^26.0.12",
     "esbuild": "^0.25.0",
-    "jszip": "^3.10.1"
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.11.0",
+    "jszip": "^3.10.1",
+    "prettier": "^3.9.6"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.6",

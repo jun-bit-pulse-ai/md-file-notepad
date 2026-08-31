@@ -48,7 +48,8 @@ function mathPlugin(instance) {
     // A lone "$12.00" shouldn't start math.
     let end = start + 1
     while (end < state.src.length) {
-      if (state.src.charCodeAt(end) === 0x24 && state.src.charCodeAt(end - 1) !== 0x5c) break
+      if (state.src.charCodeAt(end) === 0x24 && state.src.charCodeAt(end - 1) !== 0x5c)
+        break
       if (state.src.charCodeAt(end) === 0x0a) return false
       end++
     }
@@ -63,39 +64,43 @@ function mathPlugin(instance) {
     return true
   })
 
-  instance.block.ruler.before('fence', 'math_block', (state, startLine, endLine, silent) => {
-    const start = state.bMarks[startLine] + state.tShift[startLine]
-    const max = state.eMarks[startLine]
-    if (start + 2 > max) return false
-    if (state.src.slice(start, start + 2) !== '$$') return false
-    if (silent) return true
+  instance.block.ruler.before(
+    'fence',
+    'math_block',
+    (state, startLine, endLine, silent) => {
+      const start = state.bMarks[startLine] + state.tShift[startLine]
+      const max = state.eMarks[startLine]
+      if (start + 2 > max) return false
+      if (state.src.slice(start, start + 2) !== '$$') return false
+      if (silent) return true
 
-    let nextLine = startLine
-    let found = false
-    const firstLine = state.src.slice(start + 2, max).trim()
-    if (firstLine.endsWith('$$') && firstLine.length > 2) {
-      found = true
-    }
-    const buffer = found ? [firstLine.slice(0, -2)] : firstLine ? [firstLine] : []
-
-    while (!found && ++nextLine < endLine) {
-      const lineStart = state.bMarks[nextLine] + state.tShift[nextLine]
-      const lineMax = state.eMarks[nextLine]
-      const line = state.src.slice(lineStart, lineMax)
-      if (line.trim() === '$$') {
+      let nextLine = startLine
+      let found = false
+      const firstLine = state.src.slice(start + 2, max).trim()
+      if (firstLine.endsWith('$$') && firstLine.length > 2) {
         found = true
-        break
       }
-      buffer.push(line)
-    }
-    if (!found) return false
+      const buffer = found ? [firstLine.slice(0, -2)] : firstLine ? [firstLine] : []
 
-    const token = state.push('math_block', 'div', 0)
-    token.block = true
-    token.content = buffer.join('\n')
-    state.line = nextLine + 1
-    return true
-  })
+      while (!found && ++nextLine < endLine) {
+        const lineStart = state.bMarks[nextLine] + state.tShift[nextLine]
+        const lineMax = state.eMarks[nextLine]
+        const line = state.src.slice(lineStart, lineMax)
+        if (line.trim() === '$$') {
+          found = true
+          break
+        }
+        buffer.push(line)
+      }
+      if (!found) return false
+
+      const token = state.push('math_block', 'div', 0)
+      token.block = true
+      token.content = buffer.join('\n')
+      state.line = nextLine + 1
+      return true
+    }
+  )
 
   const render = (content, displayMode) => {
     try {

@@ -151,10 +151,11 @@ test('walkDirectory finds markdown files recursively', async () => {
   fs.writeFileSync(path.join(dir, 'notes', 'deep', 'low.md'), '')
 
   const { files } = await walkDirectory(dir)
-  assert.deepEqual(
-    files.map((f) => f.relativePath).sort(),
-    ['notes/deep/low.md', 'notes/mid.md', 'top.md']
-  )
+  assert.deepEqual(files.map((f) => f.relativePath).sort(), [
+    'notes/deep/low.md',
+    'notes/mid.md',
+    'top.md',
+  ])
 })
 
 test('walkDirectory reports paths relative to the root', async () => {
@@ -177,7 +178,10 @@ test('walkDirectory skips heavy and hidden directories', async () => {
   fs.writeFileSync(path.join(dir, 'real.md'), '')
 
   const { files } = await walkDirectory(dir)
-  assert.deepEqual(files.map((f) => f.relativePath), ['real.md'])
+  assert.deepEqual(
+    files.map((f) => f.relativePath),
+    ['real.md']
+  )
 })
 
 test('walkDirectory ignores non-markdown files', async () => {
@@ -186,7 +190,10 @@ test('walkDirectory ignores non-markdown files', async () => {
   fs.writeFileSync(path.join(dir, 'notes.md'), '')
 
   const { files } = await walkDirectory(dir)
-  assert.deepEqual(files.map((f) => f.name), ['notes.md'])
+  assert.deepEqual(
+    files.map((f) => f.name),
+    ['notes.md']
+  )
 })
 
 test('walkDirectory respects the depth limit', async () => {
@@ -196,7 +203,10 @@ test('walkDirectory respects the depth limit', async () => {
   fs.writeFileSync(path.join(dir, 'shallow.md'), '')
 
   const { files } = await walkDirectory(dir, { maxDepth: 1 })
-  assert.deepEqual(files.map((f) => f.name), ['shallow.md'])
+  assert.deepEqual(
+    files.map((f) => f.name),
+    ['shallow.md']
+  )
 })
 
 test('walkDirectory caps results and flags truncation', async () => {
@@ -224,7 +234,10 @@ test('walkDirectory skips unreadable subdirectories rather than failing', async 
 
   try {
     const { files } = await walkDirectory(dir)
-    assert.ok(files.some((f) => f.name === 'ok.md'), 'readable files still returned')
+    assert.ok(
+      files.some((f) => f.name === 'ok.md'),
+      'readable files still returned'
+    )
   } finally {
     fs.chmodSync(locked, 0o755)
   }

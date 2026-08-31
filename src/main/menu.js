@@ -6,7 +6,14 @@ const path = require('node:path')
  * focused window, so the renderer owns the behaviour and the menu stays a
  * thin dispatcher.
  */
-function buildMenu({ store, send, onOpenFile, onOpenRecent, onClearRecent, onNewWindow }) {
+function buildMenu({
+  store,
+  send,
+  onOpenFile,
+  onOpenRecent,
+  onClearRecent,
+  onNewWindow,
+}) {
   const isMac = process.platform === 'darwin'
   const cmd = (name) => () => send(name)
 
@@ -328,12 +335,7 @@ function buildMenu({ store, send, onOpenFile, onOpenRecent, onClearRecent, onNew
   template.push({
     role: 'window',
     submenu: isMac
-      ? [
-          { role: 'minimize' },
-          { role: 'zoom' },
-          { type: 'separator' },
-          { role: 'front' },
-        ]
+      ? [{ role: 'minimize' }, { role: 'zoom' }, { type: 'separator' }, { role: 'front' }]
       : [{ role: 'minimize' }, { role: 'close' }],
   })
 

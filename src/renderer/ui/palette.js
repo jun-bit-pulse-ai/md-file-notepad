@@ -40,7 +40,9 @@ class Palette {
       this.render()
     })
     this.input.addEventListener('keydown', (event) => this.handleKey(event))
-    this.root.querySelector('.palette-backdrop').addEventListener('click', () => this.close())
+    this.root
+      .querySelector('.palette-backdrop')
+      .addEventListener('click', () => this.close())
 
     this.close()
   }
@@ -116,10 +118,14 @@ class Palette {
 
   render() {
     const query = this.input.value.trim()
-    this.results = rankItems(query, this.files, (file) => file.relativePath).slice(0, MAX_VISIBLE)
+    this.results = rankItems(query, this.files, (file) => file.relativePath).slice(
+      0,
+      MAX_VISIBLE
+    )
 
     if (!this.files.length) {
-      this.list.innerHTML = '<li class="palette-empty">No Markdown files in this folder.</li>'
+      this.list.innerHTML =
+        '<li class="palette-empty">No Markdown files in this folder.</li>'
       this.count.textContent = ''
       return
     }
@@ -138,7 +144,10 @@ class Palette {
 
       const name = document.createElement('span')
       name.className = 'palette-name'
-      for (const segment of highlightSegments(result.item.relativePath, result.positions)) {
+      for (const segment of highlightSegments(
+        result.item.relativePath,
+        result.positions
+      )) {
         const span = document.createElement('span')
         span.textContent = segment.text
         if (segment.matched) span.className = 'palette-match'
@@ -159,7 +168,9 @@ class Palette {
     const shown = this.results.length
     const total = this.files.length
     this.count.textContent =
-      shown < total ? `${shown} of ${total}${this.truncated ? '+' : ''}` : `${total} files`
+      shown < total
+        ? `${shown} of ${total}${this.truncated ? '+' : ''}`
+        : `${total} files`
   }
 
   renderActive() {

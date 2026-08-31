@@ -70,7 +70,9 @@ body {
   padding: 4px 8px;
   border-radius: 5px;
   cursor: default;
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
 
 .sidebar-tab:hover {
@@ -129,7 +131,9 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
 
 .outline-item:hover,
@@ -145,12 +149,30 @@ body {
   font-weight: 500;
 }
 
-.outline-level-1 { padding-left: 12px; font-weight: 600; color: var(--text); }
-.outline-level-2 { padding-left: 24px; }
-.outline-level-3 { padding-left: 36px; font-size: 12.5px; }
-.outline-level-4 { padding-left: 48px; font-size: 12px; }
-.outline-level-5 { padding-left: 60px; font-size: 12px; }
-.outline-level-6 { padding-left: 72px; font-size: 12px; }
+.outline-level-1 {
+  padding-left: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+.outline-level-2 {
+  padding-left: 24px;
+}
+.outline-level-3 {
+  padding-left: 36px;
+  font-size: 12.5px;
+}
+.outline-level-4 {
+  padding-left: 48px;
+  font-size: 12px;
+}
+.outline-level-5 {
+  padding-left: 60px;
+  font-size: 12px;
+}
+.outline-level-6 {
+  padding-left: 72px;
+  font-size: 12px;
+}
 
 .files-root {
   font-size: 11px;
@@ -239,7 +261,9 @@ body {
   padding: 2px 7px;
   border-radius: 4px;
   cursor: default;
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 }
 
 .status-toggle:hover {
@@ -255,7 +279,9 @@ body {
 .status-flash {
   opacity: 0;
   transform: translateY(3px);
-  transition: opacity var(--transition), transform var(--transition);
+  transition:
+    opacity var(--transition),
+    transform var(--transition);
   color: var(--text-muted);
 }
 
@@ -264,8 +290,12 @@ body {
   transform: none;
 }
 
-.status-flash-error { color: var(--danger); }
-.status-flash-warn { color: var(--warn); }
+.status-flash-error {
+  color: var(--danger);
+}
+.status-flash-warn {
+  color: var(--warn);
+}
 
 /* ------------------------------------------------------ shortcut sheet */
 
@@ -402,12 +432,20 @@ body {
 }
 
 @keyframes palette-in {
-  from { opacity: 0; transform: translateY(-8px) scale(0.99); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .palette-panel { animation: none; }
+  .palette-panel {
+    animation: none;
+  }
 }
 
 .palette-input {

@@ -1,7 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { computeStats, countWords, formatStats, toPlainText } from '../src/renderer/lib/stats.js'
+import {
+  computeStats,
+  countWords,
+  formatStats,
+  toPlainText,
+} from '../src/renderer/lib/stats.js'
 
 test('counts plain words', () => {
   assert.equal(countWords('one two three'), 3)

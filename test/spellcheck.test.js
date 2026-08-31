@@ -13,10 +13,10 @@ const labels = (template) => template.map((item) => item.label || item.role || i
 /* ------------------------------- languages ------------------------------ */
 
 test('normalizeLanguages keeps only supported codes, in the requested order', () => {
-  assert.deepEqual(
-    normalizeLanguages(['fr-FR', 'en-US'], ['en-US', 'fr-FR', 'de-DE']),
-    ['fr-FR', 'en-US']
-  )
+  assert.deepEqual(normalizeLanguages(['fr-FR', 'en-US'], ['en-US', 'fr-FR', 'de-DE']), [
+    'fr-FR',
+    'en-US',
+  ])
 })
 
 test('normalizeLanguages resolves a bare language to a regional variant', () => {
@@ -24,10 +24,9 @@ test('normalizeLanguages resolves a bare language to a regional variant', () => 
 })
 
 test('normalizeLanguages drops unsupported codes and duplicates', () => {
-  assert.deepEqual(
-    normalizeLanguages(['en-US', 'kl-KL', 'en-US'], ['en-US', 'fr-FR']),
-    ['en-US']
-  )
+  assert.deepEqual(normalizeLanguages(['en-US', 'kl-KL', 'en-US'], ['en-US', 'fr-FR']), [
+    'en-US',
+  ])
 })
 
 test('normalizeLanguages returns null when nothing usable remains', () => {
@@ -48,14 +47,22 @@ function fakeSession(available = ['en-US', 'fr-FR']) {
     availableSpellCheckerLanguages: available,
     enabled: null,
     languages: null,
-    setSpellCheckerEnabled(value) { this.enabled = value },
-    setSpellCheckerLanguages(value) { this.languages = value },
+    setSpellCheckerEnabled(value) {
+      this.enabled = value
+    },
+    setSpellCheckerLanguages(value) {
+      this.languages = value
+    },
   }
 }
 
 test('enabling applies both the toggle and the languages', () => {
   const session = fakeSession()
-  const applied = applySpellCheckerSettings(session, { enabled: true, languages: ['fr-FR'] }, 'linux')
+  const applied = applySpellCheckerSettings(
+    session,
+    { enabled: true, languages: ['fr-FR'] },
+    'linux'
+  )
 
   assert.equal(session.enabled, true)
   assert.deepEqual(session.languages, ['fr-FR'])
@@ -72,7 +79,11 @@ test('disabling skips language configuration entirely', () => {
 
 test('macOS leaves languages to the OS speller', () => {
   const session = fakeSession()
-  const applied = applySpellCheckerSettings(session, { enabled: true, languages: ['fr-FR'] }, 'darwin')
+  const applied = applySpellCheckerSettings(
+    session,
+    { enabled: true, languages: ['fr-FR'] },
+    'darwin'
+  )
 
   assert.equal(session.enabled, true, 'the toggle still applies')
   assert.equal(session.languages, null, 'but languages are not forced')
@@ -88,8 +99,12 @@ test('usesOsSpellChecker is true only on macOS', () => {
 test('a session that throws does not take the app down', () => {
   const session = {
     availableSpellCheckerLanguages: ['en-US'],
-    setSpellCheckerEnabled() { throw new Error('nope') },
-    setSpellCheckerLanguages() { throw new Error('nope') },
+    setSpellCheckerEnabled() {
+      throw new Error('nope')
+    },
+    setSpellCheckerLanguages() {
+      throw new Error('nope')
+    },
   }
   assert.doesNotThrow(() =>
     applySpellCheckerSettings(session, { enabled: true, languages: ['en-US'] }, 'linux')
@@ -110,13 +125,23 @@ test('a misspelled word lists its suggestions first', () => {
     },
     {}
   )
-  assert.deepEqual(labels(template).slice(0, 4), ['the', 'tea', 'separator', 'Add to Dictionary'])
+  assert.deepEqual(labels(template).slice(0, 4), [
+    'the',
+    'tea',
+    'separator',
+    'Add to Dictionary',
+  ])
 })
 
 test('clicking a suggestion replaces the misspelling', () => {
   const replaced = []
   const template = buildContextMenuTemplate(
-    { isEditable: true, misspelledWord: 'teh', dictionarySuggestions: ['the'], editFlags: EDIT_FLAGS },
+    {
+      isEditable: true,
+      misspelledWord: 'teh',
+      dictionarySuggestions: ['the'],
+      editFlags: EDIT_FLAGS,
+    },
     { onReplaceMisspelling: (word) => replaced.push(word) }
   )
   template[0].click()
@@ -126,7 +151,12 @@ test('clicking a suggestion replaces the misspelling', () => {
 test('Add to Dictionary passes the misspelled word through', () => {
   const added = []
   const template = buildContextMenuTemplate(
-    { isEditable: true, misspelledWord: 'notepad', dictionarySuggestions: [], editFlags: EDIT_FLAGS },
+    {
+      isEditable: true,
+      misspelledWord: 'notepad',
+      dictionarySuggestions: [],
+      editFlags: EDIT_FLAGS,
+    },
     { onAddToDictionary: (word) => added.push(word) }
   )
   template.find((item) => item.label === 'Add to Dictionary').click()
@@ -135,7 +165,12 @@ test('Add to Dictionary passes the misspelled word through', () => {
 
 test('a word with no suggestions still offers the dictionary', () => {
   const template = buildContextMenuTemplate(
-    { isEditable: true, misspelledWord: 'xyzzy', dictionarySuggestions: [], editFlags: EDIT_FLAGS },
+    {
+      isEditable: true,
+      misspelledWord: 'xyzzy',
+      dictionarySuggestions: [],
+      editFlags: EDIT_FLAGS,
+    },
     {}
   )
   const names = labels(template)
@@ -146,7 +181,12 @@ test('a word with no suggestions still offers the dictionary', () => {
 test('suggestions are capped so the menu stays usable', () => {
   const many = Array.from({ length: 20 }, (_, i) => `word${i}`)
   const template = buildContextMenuTemplate(
-    { isEditable: true, misspelledWord: 'wrd', dictionarySuggestions: many, editFlags: EDIT_FLAGS },
+    {
+      isEditable: true,
+      misspelledWord: 'wrd',
+      dictionarySuggestions: many,
+      editFlags: EDIT_FLAGS,
+    },
     {}
   )
   const suggestions = labels(template).filter((label) => /^word\d+$/.test(label))
@@ -155,7 +195,12 @@ test('suggestions are capped so the menu stays usable', () => {
 
 test('correctly spelled text gets no spelling section', () => {
   const template = buildContextMenuTemplate(
-    { isEditable: true, misspelledWord: '', selectionText: 'fine', editFlags: EDIT_FLAGS },
+    {
+      isEditable: true,
+      misspelledWord: '',
+      selectionText: 'fine',
+      editFlags: EDIT_FLAGS,
+    },
     {}
   )
   const names = labels(template)
@@ -165,7 +210,12 @@ test('correctly spelled text gets no spelling section', () => {
 
 test('read-only content offers no editing commands', () => {
   const template = buildContextMenuTemplate(
-    { isEditable: false, misspelledWord: 'teh', dictionarySuggestions: ['the'], editFlags: {} },
+    {
+      isEditable: false,
+      misspelledWord: 'teh',
+      dictionarySuggestions: ['the'],
+      editFlags: {},
+    },
     {}
   )
   const names = labels(template)
@@ -187,8 +237,13 @@ test('clipboard items follow the reported edit flags', () => {
 })
 
 test('formatting entries need a selection, except Link', () => {
-  const template = buildContextMenuTemplate({ isEditable: true, selectionText: '', editFlags: {} }, {})
-  const byLabel = Object.fromEntries(template.filter((i) => i.label).map((i) => [i.label, i.enabled]))
+  const template = buildContextMenuTemplate(
+    { isEditable: true, selectionText: '', editFlags: {} },
+    {}
+  )
+  const byLabel = Object.fromEntries(
+    template.filter((i) => i.label).map((i) => [i.label, i.enabled])
+  )
   assert.equal(byLabel.Bold, false)
   assert.equal(byLabel['Link…'], undefined, 'Link stays available with no selection')
 })

@@ -141,7 +141,8 @@ class Sidebar {
             this.expanded.add(entry.path)
             icon.textContent = '▾'
             const child = await window.notepad.listDirectory(entry.path)
-            if (!child.error) item.appendChild(this.renderEntries(child.entries, depth + 1))
+            if (!child.error)
+              item.appendChild(this.renderEntries(child.entries, depth + 1))
           }
         })
       } else {

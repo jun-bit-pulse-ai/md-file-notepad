@@ -56,25 +56,25 @@ pane and no preview toggle: one editable, rendered document.
 
 ## Keyboard shortcuts
 
-| | | | |
-| --- | --- | --- | --- |
-| `⌘B` | Bold | `⌘/` | Toggle source mode |
-| `⌘I` | Italic | `⇧⌘F` | Focus mode |
-| `⌘E` | Inline code | `⇧⌘T` | Typewriter mode |
-| `⇧⌘X` | Strikethrough | `⇧⌘1` | Outline sidebar |
-| `⇧⌘H` | Highlight | `⇧⌘2` | File sidebar |
-| `⌘K` | Insert link | `⌘F` | Find |
-| `⌘1`–`⌘6` | Heading level | `⌥⌘F` | Find and replace |
-| `⌘0` | Paragraph | `⌘+` / `⌘-` | Zoom text |
-| `⇧⌘8` | Bullet list | `⌘N` | New document |
-| `⌘P` | Quick Open | `⌘,` | Preferences |
-| `⇧⌘7` | Numbered list | `⌘O` | Open |
-| `⇧⌘9` | Task list | `⌘S` | Save |
-| `⇧⌘D` | Toggle task done | `⇧⌘S` | Save As |
-| `⇧⌘Q` | Blockquote | `⌥⌘R` | Reveal in Finder |
-| `⌥⌘C` | Code block | `⇧⌘V` | Paste as plain text |
-| `⌥⌘T` | Table | `⇧⌘C` | Copy as Markdown |
-| `⌥⌘H` | Horizontal rule | | |
+|           |                  |             |                     |
+| --------- | ---------------- | ----------- | ------------------- |
+| `⌘B`      | Bold             | `⌘/`        | Toggle source mode  |
+| `⌘I`      | Italic           | `⇧⌘F`       | Focus mode          |
+| `⌘E`      | Inline code      | `⇧⌘T`       | Typewriter mode     |
+| `⇧⌘X`     | Strikethrough    | `⇧⌘1`       | Outline sidebar     |
+| `⇧⌘H`     | Highlight        | `⇧⌘2`       | File sidebar        |
+| `⌘K`      | Insert link      | `⌘F`        | Find                |
+| `⌘1`–`⌘6` | Heading level    | `⌥⌘F`       | Find and replace    |
+| `⌘0`      | Paragraph        | `⌘+` / `⌘-` | Zoom text           |
+| `⇧⌘8`     | Bullet list      | `⌘N`        | New document        |
+| `⌘P`      | Quick Open       | `⌘,`        | Preferences         |
+| `⇧⌘7`     | Numbered list    | `⌘O`        | Open                |
+| `⇧⌘9`     | Task list        | `⌘S`        | Save                |
+| `⇧⌘D`     | Toggle task done | `⇧⌘S`       | Save As             |
+| `⇧⌘Q`     | Blockquote       | `⌥⌘R`       | Reveal in Finder    |
+| `⌥⌘C`     | Code block       | `⇧⌘V`       | Paste as plain text |
+| `⌥⌘T`     | Table            | `⇧⌘C`       | Copy as Markdown    |
+| `⌥⌘H`     | Horizontal rule  |             |                     |
 
 The same list is available in the app under Help ▸ Keyboard Shortcuts.
 
@@ -117,11 +117,20 @@ For a local unpackaged build, `npm run dist:dir` is faster.
 ## Development
 
 ```bash
-npm run watch   # rebuild the renderer on change
-npm run dev     # build once, then launch
-npm test        # 174 unit tests
-npm run smoke   # boot the real app headlessly and screenshot it
+npm run watch        # rebuild the renderer on change
+npm run dev          # build once, then launch
+npm test             # 174 unit tests
+npm run smoke        # boot the real app headlessly and screenshot it
+npm run lint         # ESLint
+npm run lint:fix     # ESLint, fixing what it can
+npm run format       # Prettier, rewriting files
+npm run format:check # Prettier, read-only (what CI runs)
 ```
+
+ESLint covers correctness only — `eslint-config-prettier` switches off every
+stylistic rule, so formatting is Prettier's job and the two never disagree. The
+config describes each tree separately, since the main process is CommonJS on
+Node, the renderer is ESM in a browser, and the tests are a mix.
 
 The unit tests cover outline extraction, document statistics, the formatting
 commands, file I/O, the preference store, the spell-check menu, fuzzy file
@@ -131,15 +140,15 @@ matching, the recursive file walk, and the Markdown-to-Word mapping. They run on
 virtual display, asserts the editor mounted with no console errors, and writes
 a PNG. Flags:
 
-| Flag | Effect |
-| ---- | ------ |
-| `--out <path>` | Where to write the screenshot |
-| `--scroll <px>` | Scroll before capturing, to inspect content below the fold |
-| `--theme light\|dark` | Force a theme instead of following the OS |
-| `--export-docx <path>` | Run the Word export end to end and write the file |
-| `--settle <ms>` | Wait longer before capturing |
-| `--exercise-ui` | Drive Quick Open and Preferences, and report what opened |
-| `--keep-palette` | Leave Quick Open on screen (for screenshots) |
+| Flag                   | Effect                                                     |
+| ---------------------- | ---------------------------------------------------------- |
+| `--out <path>`         | Where to write the screenshot                              |
+| `--scroll <px>`        | Scroll before capturing, to inspect content below the fold |
+| `--theme light\|dark`  | Force a theme instead of following the OS                  |
+| `--export-docx <path>` | Run the Word export end to end and write the file          |
+| `--settle <ms>`        | Wait longer before capturing                               |
+| `--exercise-ui`        | Drive Quick Open and Preferences, and report what opened   |
+| `--keep-palette`       | Leave Quick Open on screen (for screenshots)               |
 
 A Markdown file passed as a positional argument is opened on launch. On a Mac
 with a display, use `npm run smoke:mac`.
@@ -159,11 +168,12 @@ outside remote sessions via `$CLAUDE_CODE_REMOTE`.
 
 `.github/workflows/ci.yml` runs on every push to `main` and every pull request:
 
-| Job | Runner | What it proves |
-| --- | ------ | -------------- |
-| Unit tests | Ubuntu | The 174 tests pass and the renderer bundle builds |
+| Job                 | Runner | What it proves                                                                                                                   |
+| ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Lint and format     | Ubuntu | ESLint reports no problems and every file matches Prettier                                                                       |
+| Unit tests          | Ubuntu | The 174 tests pass and the renderer bundle builds                                                                                |
 | Headless smoke test | Ubuntu | The real app boots under Xvfb with no console errors, Quick Open and Preferences open and work, and a `.docx` export round-trips |
-| Package macOS app | macOS | `electron-builder` assembles a real `.app` with an executable, an `Info.plist`, and the `.md` file association intact |
+| Package macOS app   | macOS  | `electron-builder` assembles a real `.app` with an executable, an `Info.plist`, and the `.md` file association intact            |
 
 The smoke job uploads its screenshot and exported document as artifacts, so a
 failure can be inspected rather than guessed at. The macOS job builds unpacked

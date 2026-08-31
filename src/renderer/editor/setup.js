@@ -17,12 +17,7 @@ import {
 } from '@codemirror/commands'
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search'
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete'
-import {
-  bracketMatching,
-  foldGutter,
-  foldKeymap,
-  indentOnInput,
-} from '@codemirror/language'
+import { bracketMatching, foldKeymap, indentOnInput } from '@codemirror/language'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
 

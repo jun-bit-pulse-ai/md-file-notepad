@@ -33,7 +33,9 @@ function isWordStart(target, index) {
   const previous = target[index - 1]
   if (WORD_BOUNDARIES.has(previous)) return true
   // camelCase bump: "livePreview" -> P starts a word.
-  return previous === previous.toLowerCase() && target[index] !== target[index].toLowerCase()
+  return (
+    previous === previous.toLowerCase() && target[index] !== target[index].toLowerCase()
+  )
 }
 
 /**
@@ -107,7 +109,10 @@ function rankItems(query, items, keyFn = (item) => item) {
     results.push({ item, key, ...match })
   }
 
-  results.sort((a, b) => b.score - a.score || a.key.length - b.key.length || a.key.localeCompare(b.key))
+  results.sort(
+    (a, b) =>
+      b.score - a.score || a.key.length - b.key.length || a.key.localeCompare(b.key)
+  )
   return results
 }
 

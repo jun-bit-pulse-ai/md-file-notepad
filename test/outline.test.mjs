@@ -32,9 +32,16 @@ test('offsets point at the start of the heading line', () => {
 })
 
 test('ignores # inside fenced code blocks', () => {
-  const doc = ['# Real', '', '```bash', '# not a heading', 'echo hi', '```', '', '## Also real'].join(
-    '\n'
-  )
+  const doc = [
+    '# Real',
+    '',
+    '```bash',
+    '# not a heading',
+    'echo hi',
+    '```',
+    '',
+    '## Also real',
+  ].join('\n')
   const outline = extractOutline(doc)
   assert.deepEqual(
     outline.map((h) => h.text),

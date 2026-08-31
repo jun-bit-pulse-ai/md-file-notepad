@@ -9,7 +9,7 @@
  *
  * Exits non-zero if the renderer logged an error, so it can gate a build.
  */
-const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -77,7 +77,7 @@ app.whenReady().then(() => {
       }))()
     `)
 
-// Optionally drive the new UI surfaces and report what opened.
+    // Optionally drive the new UI surfaces and report what opened.
     if (args.includes('--exercise-ui')) {
       win.webContents.send('menu:command', 'file:quick-open')
       await new Promise((resolve) => setTimeout(resolve, 1200))
@@ -111,14 +111,14 @@ app.whenReady().then(() => {
 
       // Keeping the palette up for a screenshot means not stacking prefs on it.
       if (!args.includes('--keep-palette')) {
-      win.webContents.send('menu:command', 'preferences')
-      await new Promise((resolve) => setTimeout(resolve, 800))
-      report.prefsOpen = await win.webContents.executeJavaScript(
-        `document.getElementById('prefs-sheet').open === true`
-      )
-      report.prefsControls = await win.webContents.executeJavaScript(
-        `document.querySelectorAll('.prefs-row').length`
-      )
+        win.webContents.send('menu:command', 'preferences')
+        await new Promise((resolve) => setTimeout(resolve, 800))
+        report.prefsOpen = await win.webContents.executeJavaScript(
+          `document.getElementById('prefs-sheet').open === true`
+        )
+        report.prefsControls = await win.webContents.executeJavaScript(
+          `document.querySelectorAll('.prefs-row').length`
+        )
       }
     }
 

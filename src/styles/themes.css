@@ -4,8 +4,9 @@
  */
 
 :root {
-  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue',
-    'Segoe UI', Arial, sans-serif;
+  --font-body:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Arial,
+    sans-serif;
   --font-mono: 'SF Mono', ui-monospace, Menlo, 'JetBrains Mono', Consolas, monospace;
   --font-heading: var(--font-body);
 

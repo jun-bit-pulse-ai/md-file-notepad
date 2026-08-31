@@ -140,7 +140,9 @@ async function walkDirectory(root, { maxDepth = 6, maxEntries = 2000 } = {}) {
   }
 
   await walk(root, 0)
-  files.sort((a, b) => a.relativePath.localeCompare(b.relativePath, undefined, { numeric: true }))
+  files.sort((a, b) =>
+    a.relativePath.localeCompare(b.relativePath, undefined, { numeric: true })
+  )
   return { root, files, truncated }
 }
 

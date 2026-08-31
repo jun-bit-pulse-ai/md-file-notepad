@@ -169,12 +169,15 @@ function buildDecorations(view) {
           case 'Image': {
             if (isActive(nodeFrom, nodeTo)) return
             const raw = doc.sliceString(nodeFrom, nodeTo)
-            const parsed = /^!\[([^\]]*)\]\(\s*([^\s)]+)(?:\s+["'(](.*)["')])?\s*\)$/.exec(raw)
+            const parsed =
+              /^!\[([^\]]*)\]\(\s*([^\s)]+)(?:\s+["'(](.*)["')])?\s*\)$/.exec(raw)
             if (!parsed) return
             collector.add(
               nodeFrom,
               nodeTo,
-              Decoration.replace({ widget: new ImageWidget(parsed[2], parsed[1], parsed[3]) })
+              Decoration.replace({
+                widget: new ImageWidget(parsed[2], parsed[1], parsed[3]),
+              })
             )
             return
           }
@@ -204,7 +207,7 @@ function buildDecorations(view) {
 
           // --- Blocks --------------------------------------------------
           case 'Blockquote': {
-            for (let pos = nodeFrom; pos <= nodeTo; ) {
+            for (let pos = nodeFrom; pos <= nodeTo;) {
               const line = doc.lineAt(pos)
               collector.line(line.from, 'cm-md-quote')
               if (pos > nodeTo) break
@@ -213,7 +216,10 @@ function buildDecorations(view) {
             if (!isBlockActive(nodeFrom, nodeTo)) {
               for (const child of childrenOf(node)) {
                 if (child.name === 'QuoteMark') {
-                  const after = doc.sliceString(child.to, Math.min(child.to + 1, doc.length))
+                  const after = doc.sliceString(
+                    child.to,
+                    Math.min(child.to + 1, doc.length)
+                  )
                   collector.add(child.from, child.to + (after === ' ' ? 1 : 0), hidden)
                 }
               }
@@ -281,11 +287,16 @@ function buildDecorations(view) {
             // The GFM parser nests the marker as ListItem > Task > TaskMarker.
             const task = node.node.getChild('Task')?.getChild('TaskMarker')
             if (task) {
-              const checked = doc.sliceString(task.from, task.to).toLowerCase().includes('x')
+              const checked = doc
+                .sliceString(task.from, task.to)
+                .toLowerCase()
+                .includes('x')
               collector.add(
                 task.from,
                 task.to,
-                Decoration.replace({ widget: new TaskWidget(checked, task.from, task.to) })
+                Decoration.replace({
+                  widget: new TaskWidget(checked, task.from, task.to),
+                })
               )
               if (checked) collector.line(line.from, 'cm-md-task-done')
             }
@@ -344,7 +355,11 @@ function scanInlinePatterns(view, collector, from, to, isActive) {
   const inCode = (pos) => {
     let node = tree.resolveInner(pos, 1)
     while (node) {
-      if (node.name === 'InlineCode' || node.name === 'FencedCode' || node.name === 'CodeBlock') {
+      if (
+        node.name === 'InlineCode' ||
+        node.name === 'FencedCode' ||
+        node.name === 'CodeBlock'
+      ) {
         return true
       }
       node = node.parent

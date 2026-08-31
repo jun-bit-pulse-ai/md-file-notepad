@@ -15,10 +15,7 @@ const fsSync = require('node:fs')
 const { IPC } = require('../shared/ipc.js')
 const { Store } = require('./store.js')
 const { buildMenu } = require('./menu.js')
-const {
-  applySpellCheckerSettings,
-  buildContextMenuTemplate,
-} = require('./spellcheck.js')
+const { applySpellCheckerSettings, buildContextMenuTemplate } = require('./spellcheck.js')
 const {
   FILE_FILTERS,
   isMarkdownPath,
@@ -365,9 +362,7 @@ function registerIpc() {
       webPreferences: { offscreen: true, javascript: false },
     })
     try {
-      await printer.loadURL(
-        'data:text/html;charset=utf-8,' + encodeURIComponent(html)
-      )
+      await printer.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html))
       const pdf = await printer.webContents.printToPDF({
         printBackground: true,
         margins: { marginType: 'default' },

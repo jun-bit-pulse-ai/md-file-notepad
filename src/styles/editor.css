@@ -22,18 +22,46 @@
   color: var(--text);
 }
 
-.cm-md-h1 { font-size: 1.9em; margin: 0.9em 0 0.35em; letter-spacing: -0.02em; }
-.cm-md-h2 { font-size: 1.5em; margin: 0.85em 0 0.3em; letter-spacing: -0.015em; }
-.cm-md-h3 { font-size: 1.25em; margin: 0.8em 0 0.25em; }
-.cm-md-h4 { font-size: 1.1em; margin: 0.75em 0 0.2em; }
-.cm-md-h5 { font-size: 1em; margin: 0.7em 0 0.2em; }
-.cm-md-h6 { font-size: 0.95em; margin: 0.7em 0 0.2em; color: var(--text-muted); }
+.cm-md-h1 {
+  font-size: 1.9em;
+  margin: 0.9em 0 0.35em;
+  letter-spacing: -0.02em;
+}
+.cm-md-h2 {
+  font-size: 1.5em;
+  margin: 0.85em 0 0.3em;
+  letter-spacing: -0.015em;
+}
+.cm-md-h3 {
+  font-size: 1.25em;
+  margin: 0.8em 0 0.25em;
+}
+.cm-md-h4 {
+  font-size: 1.1em;
+  margin: 0.75em 0 0.2em;
+}
+.cm-md-h5 {
+  font-size: 1em;
+  margin: 0.7em 0 0.2em;
+}
+.cm-md-h6 {
+  font-size: 0.95em;
+  margin: 0.7em 0 0.2em;
+  color: var(--text-muted);
+}
 
 /* ------------------------------------------------------------- inline */
 
-.cm-md-strong { font-weight: 700; }
-.cm-md-em { font-style: italic; }
-.cm-md-strike { text-decoration: line-through; color: var(--text-muted); }
+.cm-md-strong {
+  font-weight: 700;
+}
+.cm-md-em {
+  font-style: italic;
+}
+.cm-md-strike {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
 
 .cm-md-code {
   font-family: var(--font-mono);
@@ -100,7 +128,9 @@
   margin: 0 2px 0 0;
   cursor: pointer;
   position: relative;
-  transition: background var(--transition), border-color var(--transition);
+  transition:
+    background var(--transition),
+    border-color var(--transition);
 }
 
 .cm-task-checkbox:hover {
