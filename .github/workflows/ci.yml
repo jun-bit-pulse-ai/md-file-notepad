@@ -214,4 +214,20 @@ jobs:
           # The .md file association is what makes double-click-to-open work.
           /usr/libexec/PlistBuddy -c 'Print :CFBundleDocumentTypes:0:CFBundleTypeName' \
             "$APP/Contents/Info.plist"
+
+          # The generated icon must have survived the png -> icns conversion.
+          # Comparing against Electron's own icon is the part that matters:
+          # a missing or unreadable icon silently falls back to the stock one,
+          # which is exactly the failure this is here to catch.
+          ICON_NAME=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' \
+            "$APP/Contents/Info.plist")
+          ICON="$APP/Contents/Resources/${ICON_NAME%.icns}.icns"
+          test -f "$ICON" || { echo "No icon at $ICON"; exit 1; }
+          STOCK=node_modules/electron/dist/Electron.app/Contents/Resources/electron.icns
+          if [ -f "$STOCK" ] && [ "$(shasum -a 256 <"$ICON")" = "$(shasum -a 256 <"$STOCK")" ]; then
+            echo "Bundle is using the stock Electron icon, not build-resources/icon.png"
+            exit 1
+          fi
+          echo "Icon: $ICON ($(du -h "$ICON" | cut -f1))"
+
           du -sh "$APP"

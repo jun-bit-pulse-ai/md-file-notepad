@@ -44,9 +44,9 @@ export default [
     },
   },
 
-  // Build config and ESM tests: modules on Node.
+  // Build config, generator scripts and ESM tests: modules on Node.
   {
-    files: ['*.mjs', 'test/**/*.mjs'],
+    files: ['*.mjs', 'scripts/**/*.mjs', 'test/**/*.mjs'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
