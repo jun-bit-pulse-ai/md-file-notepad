@@ -44,22 +44,42 @@ jobs:
       # enabled only when Apple credentials are present, because
       # electron-builder fails the build if it is asked to notarise without
       # them.
+      #
+      # The secrets deliberately arrive under their own names rather than as
+      # CSC_LINK / CSC_KEY_PASSWORD. A missing secret is the empty string, not
+      # unset, and electron-builder treats an empty CSC_LINK as a certificate
+      # path that happens to be empty:
+      #
+      #   chooseNotNull(v1, v2) { return v1 == null ? v2 : v1 }
+      #
+      # which resolves to the project directory and fails with "not a file".
+      # So the variables it reads are exported only on the path that has a
+      # real certificate to give it.
       - name: Build DMG and ZIP
         env:
-          CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
-          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ secrets.MACOS_CERTIFICATE != '' }}
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           npm run build
-          if [ -n "${APPLE_ID:-}" ] && [ -n "${CSC_LINK:-}" ]; then
-            echo "Signing and notarising"
-            npx electron-builder --mac -c.mac.notarize=true
+
+          # Releases are attached by the step below, not by electron-builder,
+          # which would otherwise publish implicitly because it detects CI.
+          if [ -n "${MACOS_CERTIFICATE:-}" ]; then
+            export CSC_LINK="$MACOS_CERTIFICATE"
+            export CSC_KEY_PASSWORD="${MACOS_CERTIFICATE_PASSWORD:-}"
+            if [ -n "${APPLE_ID:-}" ]; then
+              echo "Signing and notarising"
+              npx electron-builder --mac --publish never -c.mac.notarize=true
+            else
+              echo "Signing (no Apple ID, so not notarising)"
+              npx electron-builder --mac --publish never
+            fi
           else
             echo "Building unsigned (no signing secrets configured)"
-            npx electron-builder --mac
+            CSC_IDENTITY_AUTO_DISCOVERY=false npx electron-builder --mac --publish never
           fi
 
       - name: List what was produced
