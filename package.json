@@ -9,6 +9,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "node esbuild.config.mjs",
+    "icon": "node scripts/make-icon.mjs",
     "watch": "node esbuild.config.mjs --watch",
     "start": "npm run build && electron .",
     "dev": "npm run build && electron . --dev",

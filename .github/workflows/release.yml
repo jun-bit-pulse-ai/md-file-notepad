@@ -1,0 +1,94 @@
+name: Release
+
+# Two ways in:
+#   - push a tag like v0.1.0  -> builds and publishes a GitHub Release
+#   - run manually from the Actions tab -> builds and uploads an artifact
+#     you can download, without creating a release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to create the release and upload assets
+
+jobs:
+  build:
+    name: Build macOS installers
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Cache Electron binary
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/electron
+          key: electron-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Guard against shipping a build that does not pass its own checks.
+      - name: Verify before packaging
+        run: |
+          npm run lint
+          npm test
+
+      # Signing is opt-in: with no certificate secret the build is unsigned,
+      # which still installs but shows a Gatekeeper warning. Notarisation is
+      # enabled only when Apple credentials are present, because
+      # electron-builder fails the build if it is asked to notarise without
+      # them.
+      - name: Build DMG and ZIP
+        env:
+          CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ secrets.MACOS_CERTIFICATE != '' }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          npm run build
+          if [ -n "${APPLE_ID:-}" ] && [ -n "${CSC_LINK:-}" ]; then
+            echo "Signing and notarising"
+            npx electron-builder --mac -c.mac.notarize=true
+          else
+            echo "Building unsigned (no signing secrets configured)"
+            npx electron-builder --mac
+          fi
+
+      - name: List what was produced
+        run: |
+          ls -lh dist/*.dmg dist/*.zip 2>/dev/null || true
+          for f in dist/*.dmg; do
+            [ -e "$f" ] || { echo "No .dmg was produced"; exit 1; }
+            echo "Built: $f ($(du -h "$f" | cut -f1))"
+          done
+
+      # Available on every run, including manual ones with no tag.
+      - name: Upload installers as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installers
+          path: |
+            dist/*.dmg
+            dist/*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      # Only on a tag: attach the same files to a public GitHub Release.
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.dmg
+            dist/*.zip
+          generate_release_notes: true
+          draft: false
+          fail_on_unmatched_files: true

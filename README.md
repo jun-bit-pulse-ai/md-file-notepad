@@ -91,6 +91,17 @@ so the obvious match lands first. The walk skips `node_modules`, `.git` and
 friends, and is bounded on both depth and file count so a huge folder degrades
 to "the first N files" instead of stalling.
 
+## Download
+
+Tagged releases attach a `.dmg` and a `.zip` for both Apple Silicon and Intel
+to the [Releases page](../../releases). Between releases, the **Release**
+workflow can be run by hand from the Actions tab; it uploads the same
+installers as a downloadable artifact.
+
+The published builds are unsigned unless signing secrets are configured (see
+below), so the first launch needs **right-click → Open** — double-clicking an
+unsigned app shows a Gatekeeper warning with no way past it.
+
 ## Getting started
 
 ```bash
@@ -112,14 +123,45 @@ machines, set `CSC_LINK` and `CSC_KEY_PASSWORD` for signing and
 `APPLE_ID` / `APPLE_APP_SPECIFIC_PASSWORD` / `APPLE_TEAM_ID` for notarisation,
 which electron-builder picks up automatically.
 
-For a local unpackaged build, `npm run dist:dir` is faster.
+For a local unpackaged build, `npm run dist:dir` is faster. Building a `.dmg`
+requires macOS: the packaging step shells out to `sips` and `hdiutil`, which
+exist nowhere else.
+
+`.github/workflows/release.yml` does this on a macOS runner, so a `.dmg` can be
+produced without a Mac to hand. It runs on a `v*` tag — publishing a GitHub
+Release with the installers attached — or on demand from the Actions tab, which
+uploads them as an artifact instead. Signing is opt-in: with no
+`MACOS_CERTIFICATE` repository secret the build is unsigned, and notarisation is
+attempted only when the Apple credentials are present, because electron-builder
+fails the build if asked to notarise without them.
+
+### App icon
+
+`build-resources/icon.png` is generated, not drawn: `scripts/make-icon.mjs`
+describes the artwork as signed-distance fields and renders a 1024x1024 PNG with
+no image tooling or dependencies. Run `npm run icon` after editing it —
+`test/icon.test.mjs` re-renders the artwork and compares it against the
+committed file pixel by pixel, so the two cannot drift apart.
+
+### Mac App Store
+
+Not currently possible without design changes. The App Store requires the App
+Sandbox, which limits a process to files the user has explicitly picked. Four
+features assume ordinary filesystem access: the recursive scan behind Quick
+Open, the folder sidebar, watching open files for external edits, and reopening
+recent documents by path. Under the sandbox each of those needs rebuilding
+around security-scoped bookmarks, and the recursive scan of an arbitrary folder
+cannot be rebuilt at all — only a folder the user picked in an open panel is
+readable. Shipping it also needs a paid Apple Developer account and a
+`mas` build target with its own provisioning profile and entitlements.
 
 ## Development
 
 ```bash
 npm run watch        # rebuild the renderer on change
+npm run icon         # regenerate build-resources/icon.png
 npm run dev          # build once, then launch
-npm test             # 174 unit tests
+npm test             # 178 unit tests
 npm run smoke        # boot the real app headlessly and screenshot it
 npm run lint         # ESLint
 npm run lint:fix     # ESLint, fixing what it can
@@ -134,7 +176,8 @@ Node, the renderer is ESM in a browser, and the tests are a mix.
 
 The unit tests cover outline extraction, document statistics, the formatting
 commands, file I/O, the preference store, the spell-check menu, fuzzy file
-matching, the recursive file walk, and the Markdown-to-Word mapping. They run on plain Node with no browser or Electron.
+matching, the recursive file walk, the generated app icon, and the
+Markdown-to-Word mapping. They run on plain Node with no browser or Electron.
 
 `npm run smoke` launches the actual main process, preload and renderer under a
 virtual display, asserts the editor mounted with no console errors, and writes
@@ -171,13 +214,18 @@ outside remote sessions via `$CLAUDE_CODE_REMOTE`.
 | Job                 | Runner | What it proves                                                                                                                   |
 | ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | Lint and format     | Ubuntu | ESLint reports no problems and every file matches Prettier                                                                       |
-| Unit tests          | Ubuntu | The 174 tests pass and the renderer bundle builds                                                                                |
+| Unit tests          | Ubuntu | The 178 tests pass and the renderer bundle builds                                                                                |
 | Headless smoke test | Ubuntu | The real app boots under Xvfb with no console errors, Quick Open and Preferences open and work, and a `.docx` export round-trips |
 | Package macOS app   | macOS  | `electron-builder` assembles a real `.app` with an executable, an `Info.plist`, and the `.md` file association intact            |
 
 The smoke job uploads its screenshot and exported document as artifacts, so a
 failure can be inspected rather than guessed at. The macOS job builds unpacked
 (`--dir`) and skips code signing, so it needs no certificates.
+
+`.github/workflows/release.yml` is separate and does not run on pull requests —
+see [Building a .app / .dmg](#building-a-app--dmg). It re-runs lint and the unit
+tests before packaging, so a release cannot be cut from a commit that fails its
+own checks.
 
 ## How it works
 
