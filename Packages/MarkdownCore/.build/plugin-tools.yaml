@@ -1,0 +1,47 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "MarkdownCore-arm64-apple-macosx-debug.module": ["<MarkdownCore-arm64-apple-macosx-debug.module>"]
+  "PackageStructure": ["<PackageStructure>"]
+  "main": ["<MarkdownCore-arm64-apple-macosx-debug.module>"]
+  "test": ["<MarkdownCore-arm64-apple-macosx-debug.module>"]
+default: "main"
+nodes:
+  "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+commands:
+  "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/DocumentStatistics.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/EditorCommand.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/MarkdownBlock.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/MarkdownFormatter.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/MarkdownParser.swift"]
+    outputs: ["/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/sources"]
+    description: "Write auxiliary file /Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/sources"
+
+  "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"]
+    outputs: ["/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+
+  "<MarkdownCore-arm64-apple-macosx-debug.module>":
+    tool: phony
+    inputs: ["/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/DocumentStatistics.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/EditorCommand.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownBlock.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownFormatter.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownParser.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/Modules/MarkdownCore.swiftmodule"]
+    outputs: ["<MarkdownCore-arm64-apple-macosx-debug.module>"]
+
+  "C.MarkdownCore-arm64-apple-macosx-debug.module":
+    tool: shell
+    inputs: ["/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/DocumentStatistics.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/EditorCommand.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/MarkdownBlock.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/MarkdownFormatter.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/MarkdownParser.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/sources"]
+    outputs: ["/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/DocumentStatistics.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/EditorCommand.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownBlock.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownFormatter.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownParser.swift.o","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/Modules/MarkdownCore.swiftmodule"]
+    description: "Compiling Swift Module 'MarkdownCore' (5 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","MarkdownCore","-emit-dependencies","-emit-module","-emit-module-path","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/Modules/MarkdownCore.swiftmodule","-output-file-map","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/sources","-I","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx26.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j10","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/include/MarkdownCore-Swift.h","-swift-version","6","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","markdowncore"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Package.swift","/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

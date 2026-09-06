@@ -1,0 +1,40 @@
+{
+  "": {
+    "swift-dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/primary.swiftdeps"
+  },
+  "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/DocumentStatistics.swift": {
+    "dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/DocumentStatistics.d",
+    "object": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/DocumentStatistics.swift.o",
+    "swiftmodule": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/DocumentStatistics~partial.swiftmodule",
+    "swift-dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/DocumentStatistics.swiftdeps",
+    "diagnostics": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/DocumentStatistics.dia"
+  },
+  "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/EditorCommand.swift": {
+    "dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/EditorCommand.d",
+    "object": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/EditorCommand.swift.o",
+    "swiftmodule": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/EditorCommand~partial.swiftmodule",
+    "swift-dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/EditorCommand.swiftdeps",
+    "diagnostics": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/EditorCommand.dia"
+  },
+  "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/MarkdownBlock.swift": {
+    "dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownBlock.d",
+    "object": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownBlock.swift.o",
+    "swiftmodule": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownBlock~partial.swiftmodule",
+    "swift-dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownBlock.swiftdeps",
+    "diagnostics": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownBlock.dia"
+  },
+  "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/MarkdownFormatter.swift": {
+    "dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownFormatter.d",
+    "object": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownFormatter.swift.o",
+    "swiftmodule": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownFormatter~partial.swiftmodule",
+    "swift-dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownFormatter.swiftdeps",
+    "diagnostics": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownFormatter.dia"
+  },
+  "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/Sources/MarkdownCore/MarkdownParser.swift": {
+    "dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownParser.d",
+    "object": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownParser.swift.o",
+    "swiftmodule": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownParser~partial.swiftmodule",
+    "swift-dependencies": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownParser.swiftdeps",
+    "diagnostics": "/Users/junseki/Documents/GitHub/md-file-notepad/Packages/MarkdownCore/.build/arm64-apple-macosx/debug/MarkdownCore.build/MarkdownParser.dia"
+  }
+}
