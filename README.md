@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # Notepad MD
 
 [![CI](https://github.com/jun-bit-pulse-ai/md-file-notepad/actions/workflows/ci.yml/badge.svg)](https://github.com/jun-bit-pulse-ai/md-file-notepad/actions/workflows/ci.yml)
@@ -284,3 +285,70 @@ a plain template array so it can be tested without launching Electron.
 ## License
 
 MIT
+=======
+# md-file-notepad
+
+A Markdown editor and reader for macOS — native Swift, SwiftUI, no dependencies.
+
+## Requirements
+
+- macOS 26.0 or later
+- Xcode 26.6 (Swift 6.3, macOS 26.5 SDK)
+
+## Build and run
+
+```bash
+open MarkdownNotepad.xcodeproj
+```
+
+Or from the command line:
+
+```bash
+xcodebuild -project MarkdownNotepad.xcodeproj -scheme MarkdownNotepad -configuration Debug build
+```
+
+## Test
+
+```bash
+xcodebuild -project MarkdownNotepad.xcodeproj -scheme MarkdownNotepad -destination 'platform=macOS,arch=arm64' test
+```
+
+The parsing and formatting logic lives in a hostless test bundle, so the suite
+runs headless in under a second. The same tests also run through SwiftPM:
+
+```bash
+swift test --package-path Packages/MarkdownCore
+```
+
+## Layout
+
+| Path | What it holds |
+| --- | --- |
+| `Packages/MarkdownCore` | Pure logic: block parser, selection formatter, document statistics. No AppKit or SwiftUI. |
+| `MarkdownNotepad/` | The app: document type, editor, preview renderer, menus, settings. |
+| `MarkdownNotepadTests/` | Unit tests for `MarkdownCore`. Runs without an app host. |
+| `Config/` | `Info.plist` (document types, `.md` UTI) and the sandbox entitlements. |
+
+The Xcode target uses a **synchronized folder group**, so adding a `.swift`
+file under `MarkdownNotepad/` picks it up automatically — no `project.pbxproj`
+edit needed.
+
+## What works today
+
+- Document-based editing (`DocumentGroup`) for `.md`, `.markdown`, and plain text,
+  with multi-window, autosave, versions, and `.md` file associations
+- Editor / Split / Preview modes, resizable split
+- Live preview: headings, emphasis, inline code, links, block quotes, fenced code,
+  bullet/ordered/task lists with nesting, tables with column alignment, rules
+- Format menu and toolbar: bold, italic, strikethrough, code, link, headings,
+  lists, quote, code block, rule — all selection-aware and toggleable
+- Word / character / line count and reading time
+- Settings for editor and preview text size, default view mode, status bar
+
+## Not done yet
+
+- App icon (the asset catalog slot is empty)
+- Code signing (`CODE_SIGN_IDENTITY` is ad-hoc `-`; set a team to distribute)
+- Export to HTML or PDF
+- Outline sidebar, find and replace, syntax highlighting inside the source editor
+>>>>>>> Stashed changes

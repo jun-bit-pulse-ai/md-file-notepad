@@ -5,3 +5,23 @@ dist/
 .DS_Store
 smoke.png
 *.tsbuildinfo
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+# (Packages/ is deliberately NOT ignored -- MarkdownCore is a local package.)
+.build/
+.swiftpm/
