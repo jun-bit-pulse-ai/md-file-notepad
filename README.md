@@ -293,6 +293,71 @@ system speller, which picks the language itself; language selection only
 applies on Windows and Linux. `spellcheck.js` keeps the context-menu shape as
 a plain template array so it can be tested without launching Electron.
 
+## The Swift rewrite
+
+A second, native implementation lives alongside the Electron app under
+`Packages/`, `MarkdownNotepad/` and `Config/`: SwiftUI, no third-party
+dependencies. It is not what ships today — the released v0.1.0 above is the
+Electron build — but it is where a sandboxed, App Store-eligible version would
+come from, since it already runs under the App Sandbox that
+[blocks the Electron app](#mac-app-store).
+
+### Requirements
+
+- macOS 26.0 or later (`MACOSX_DEPLOYMENT_TARGET = 26.0`)
+- Xcode with Swift 6 (`SWIFT_VERSION = 6.0`; `MarkdownCore` declares
+  swift-tools-version 6.2)
+
+### Layout
+
+| Path                    | What it holds                                                                             |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `Packages/MarkdownCore` | Pure logic: block parser, selection formatter, document statistics. No AppKit or SwiftUI. |
+| `MarkdownNotepad/`      | The app: document type, editor, preview renderer, menus, settings.                        |
+| `MarkdownNotepadTests/` | Swift Testing suites for `MarkdownCore`.                                                  |
+| `Config/`               | `Info.plist` (document types, `.md` UTI) and the sandbox entitlements.                    |
+
+The Xcode target uses a synchronized folder group, so a new `.swift` file under
+`MarkdownNotepad/` is picked up automatically — no `project.pbxproj` edit.
+
+### Build and test
+
+```bash
+open MarkdownNotepad.xcodeproj
+# or
+xcodebuild -project MarkdownNotepad.xcodeproj -scheme MarkdownNotepad build
+xcodebuild -project MarkdownNotepad.xcodeproj -scheme MarkdownNotepad \
+  -destination 'platform=macOS,arch=arm64' test
+```
+
+`xcodebuild` is the only way to run these tests. **`swift test` finds nothing**:
+`Packages/MarkdownCore/Package.swift` declares no test target, and the suites
+live in `MarkdownNotepadTests/`, which reaches `MarkdownCore` through the Xcode
+target rather than through SwiftPM. The bundle sets no `TEST_HOST`, so it does
+run without launching the app.
+
+### What is there
+
+- Document-based editing (`DocumentGroup`) for `.md`, `.markdown`, `.mdown`,
+  `.mkd` and plain text, registered as owner of `net.daringfireball.markdown`
+- Three view modes — editor, split and preview — defaulting to split
+- `MarkdownParser` produces headings, paragraphs, lists, quotes, fenced code,
+  tables with column alignment, and thematic breaks
+- 14 selection-aware formatting commands: bold, italic, strikethrough, inline
+  code, link, headings 1–3, bullet/numbered/task lists, quote, code block and
+  horizontal rule
+- Word, character and line counts with a reading estimate at 200 wpm
+- Settings for editor and preview font size (9–32 pt), default view mode and
+  status-bar visibility
+
+### Not done yet
+
+- The app icon: `AppIcon.appiconset` declares all ten slots but no image files
+- Distribution: `CODE_SIGN_IDENTITY` is ad-hoc `-` with no development team
+- Export to HTML, PDF or Word
+- Outline sidebar, find and replace, and syntax highlighting in the source editor
+- Headings 4–6, highlights, and math — all present in the Electron app
+
 ## License
 
 MIT
