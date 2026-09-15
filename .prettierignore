@@ -3,3 +3,7 @@ build
 dist
 docs
 package-lock.json
+
+# Xcode owns these: it writes `"key" : value` and rewrites the file whenever
+# the asset catalog changes, so formatting them here just starts a fight.
+*.xcassets
