@@ -229,10 +229,13 @@ outside remote sessions via `$CLAUDE_CODE_REMOTE`.
 | Unit tests          | Ubuntu | The 178 tests pass and the renderer bundle builds                                                                                |
 | Headless smoke test | Ubuntu | The real app boots under Xvfb with no console errors, Quick Open and Preferences open and work, and a `.docx` export round-trips |
 | Package macOS app   | macOS  | `electron-builder` assembles a real `.app` with an executable, an `Info.plist`, and the `.md` file association intact            |
+| Swift package tests | macOS  | `swift test` builds `MarkdownCore` and runs its 37 Swift Testing cases, with no Xcode project or destination involved            |
 
 The smoke job uploads its screenshot and exported document as artifacts, so a
-failure can be inspected rather than guessed at. The macOS job builds unpacked
-(`--dir`) and skips code signing, so it needs no certificates.
+failure can be inspected rather than guessed at. The packaging job builds
+unpacked (`--dir`) and skips code signing, so it needs no certificates. The
+Swift job prints the runner's toolchain and SDK before building, so a package
+that outruns the runner reads as that rather than as a compile error.
 
 `.github/workflows/release.yml` is separate and does not run on pull requests —
 see [Building a .app / .dmg](#building-a-app--dmg). It re-runs lint and the unit
@@ -310,12 +313,12 @@ come from, since it already runs under the App Sandbox that
 
 ### Layout
 
-| Path                    | What it holds                                                                             |
-| ----------------------- | ----------------------------------------------------------------------------------------- |
-| `Packages/MarkdownCore` | Pure logic: block parser, selection formatter, document statistics. No AppKit or SwiftUI. |
-| `MarkdownNotepad/`      | The app: document type, editor, preview renderer, menus, settings.                        |
-| `MarkdownNotepadTests/` | Swift Testing suites for `MarkdownCore`.                                                  |
-| `Config/`               | `Info.plist` (document types, `.md` UTI) and the sandbox entitlements.                    |
+| Path                        | What it holds                                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| `Packages/MarkdownCore`     | Pure logic: block parser, selection formatter, document statistics. No AppKit or SwiftUI. |
+| `MarkdownNotepad/`          | The app: document type, editor, preview renderer, menus, settings.                        |
+| `…/Tests/MarkdownCoreTests` | Swift Testing suites for `MarkdownCore`, inside the package.                              |
+| `Config/`                   | `Info.plist` (document types, `.md` UTI) and the sandbox entitlements.                    |
 
 The Xcode target uses a synchronized folder group, so a new `.swift` file under
 `MarkdownNotepad/` is picked up automatically — no `project.pbxproj` edit.
@@ -330,11 +333,20 @@ xcodebuild -project MarkdownNotepad.xcodeproj -scheme MarkdownNotepad \
   -destination 'platform=macOS,arch=arm64' test
 ```
 
-`xcodebuild` is the only way to run these tests. **`swift test` finds nothing**:
-`Packages/MarkdownCore/Package.swift` declares no test target, and the suites
-live in `MarkdownNotepadTests/`, which reaches `MarkdownCore` through the Xcode
-target rather than through SwiftPM. The bundle sets no `TEST_HOST`, so it does
-run without launching the app.
+The logic suites also run without Xcode, which is faster and needs no
+destination:
+
+```bash
+swift test --package-path Packages/MarkdownCore
+```
+
+Both commands run the same three files. They live in the package's own
+`Tests/MarkdownCoreTests` directory, so SwiftPM picks them up from the
+`.testTarget` in `Package.swift`, and the Xcode test bundle reaches them
+through a synchronized folder group pointed at the same path. They import
+`MarkdownCore` rather than `@testable import`, so they exercise only the public
+API and need no testability settings. The bundle sets no `TEST_HOST`, so the
+Xcode run does not launch the app either.
 
 ### What is there
 

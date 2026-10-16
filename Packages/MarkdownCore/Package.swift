@@ -8,6 +8,7 @@ let package = Package(
         .library(name: "MarkdownCore", targets: ["MarkdownCore"])
     ],
     targets: [
-        .target(name: "MarkdownCore")
+        .target(name: "MarkdownCore"),
+        .testTarget(name: "MarkdownCoreTests", dependencies: ["MarkdownCore"]),
     ]
 )
