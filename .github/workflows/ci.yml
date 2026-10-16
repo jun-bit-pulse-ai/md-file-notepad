@@ -231,3 +231,23 @@ jobs:
           echo "Icon: $ICON ($(du -h "$ICON" | cut -f1))"
 
           du -sh "$APP"
+
+  swift:
+    name: Swift package tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Reports what the runner actually has before anything depends on it, so
+      # a toolchain or SDK that is too old for the package reads as that rather
+      # than as a mysterious compile failure.
+      - name: Toolchain
+        run: |
+          swift --version
+          sw_vers
+          xcodebuild -version
+
+      # The suites are pure logic and import MarkdownCore as a normal
+      # dependency, so they need no simulator, destination or app host.
+      - name: swift test
+        run: swift test --package-path Packages/MarkdownCore
