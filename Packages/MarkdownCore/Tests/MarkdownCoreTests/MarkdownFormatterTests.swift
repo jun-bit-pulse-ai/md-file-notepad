@@ -85,6 +85,77 @@ struct MarkdownFormatterTests {
         #expect(result.text == "**hi**")
     }
 
+    @Test("Heading 4 applies its marker to the current line")
+    func heading4() {
+        let result = apply(.heading4, "item", 0..<4)
+        #expect(result.text == "#### item")
+        #expect(result.selection == 0..<9)
+    }
+
+    @Test("Heading 5 applies its marker to the current line")
+    func heading5() {
+        let result = apply(.heading5, "item", 0..<4)
+        #expect(result.text == "##### item")
+        #expect(result.selection == 0..<10)
+    }
+
+    @Test("Heading 6 applies its marker to the current line")
+    func heading6() {
+        let result = apply(.heading6, "item", 0..<4)
+        #expect(result.text == "###### item")
+        #expect(result.selection == 0..<11)
+    }
+
+    @Test("Deep headings replace an existing heading marker rather than stacking")
+    func deepHeadingReplacesHeadingMarker() {
+        #expect(apply(.heading5, "### x", 0..<5).text == "##### x")
+        #expect(apply(.heading4, "###### x", 0..<8).text == "#### x")
+        #expect(apply(.heading6, "# x", 0..<3).text == "###### x")
+    }
+
+    @Test("Deep headings replace list and quote markers too")
+    func deepHeadingReplacesListMarker() {
+        #expect(apply(.heading4, "- item", 0..<6).text == "#### item")
+        #expect(apply(.heading5, "> item", 0..<6).text == "##### item")
+        #expect(apply(.heading6, "1. item", 0..<7).text == "###### item")
+    }
+
+    @Test("Applying a deep heading twice removes it")
+    func deepHeadingToggle() {
+        #expect(apply(.heading4, "#### x", 0..<6).text == "x")
+        #expect(apply(.heading6, "###### x", 0..<8).text == "x")
+    }
+
+    @Test("Deep headings apply to every line the selection touches")
+    func deepHeadingAcrossLines() {
+        let result = apply(.heading4, "one\ntwo", 1..<5)
+        #expect(result.text == "#### one\n#### two")
+    }
+
+    @Test("Deep headings round-trip through the parser")
+    func deepHeadingsParse() {
+        let levels: [(EditorCommand, Int)] = [(.heading4, 4), (.heading5, 5), (.heading6, 6)]
+        for (command, level) in levels {
+            let result = apply(command, "Title", 0..<5)
+            let expected: [MarkdownBlock] = [.heading(level: level, text: "Title")]
+            #expect(MarkdownParser.parse(result.text) == expected)
+        }
+    }
+
+    @Test("Every heading level carries a title, a symbol and a line prefix")
+    func headingMetadata() {
+        let headings: [EditorCommand] = [
+            .heading1, .heading2, .heading3, .heading4, .heading5, .heading6,
+        ]
+        for (index, command) in headings.enumerated() {
+            let level = index + 1
+            #expect(command.title == "Heading \(level)")
+            #expect(command.linePrefix == String(repeating: "#", count: level) + " ")
+            #expect(command.wrapper == nil)
+            #expect(!command.symbol.isEmpty)
+        }
+    }
+
     @Test("Offsets count grapheme clusters, not UTF-16 units")
     func unicodeOffsets() {
         // The flag is one Character but four UTF-16 units, so a UTF-16-based
