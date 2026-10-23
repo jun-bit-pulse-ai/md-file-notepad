@@ -60,6 +60,64 @@ struct MarkdownParserTests {
         #expect(MarkdownParser.parse("--") == [.paragraph(text: "--")])
     }
 
+    @Test("A paragraph underlined with equals or dashes is a setext heading")
+    func setextHeadings() {
+        let source = """
+        Title
+        =====
+
+        Section
+        -------
+        """
+        #expect(MarkdownParser.parse(source) == [
+            .heading(level: 1, text: "Title"),
+            .heading(level: 2, text: "Section"),
+        ])
+    }
+
+    @Test("A setext underline closes the whole paragraph it follows")
+    func setextUnderlinesTheWholeParagraph() {
+        #expect(MarkdownParser.parse("one\ntwo\n=") == [.heading(level: 1, text: "one\ntwo")])
+        #expect(MarkdownParser.parse("Short\n--\nnext") == [
+            .heading(level: 2, text: "Short"),
+            .paragraph(text: "next"),
+        ])
+    }
+
+    @Test("A list item followed by dashes is a list plus a thematic break")
+    func dashesAfterAListItemAreNotAHeading() {
+        #expect(MarkdownParser.parse("- item\n---") == [
+            .list(ordered: false, start: 1, items: [
+                MarkdownListItem(checked: nil, blocks: [.paragraph(text: "item")])
+            ]),
+            .thematicBreak,
+        ])
+    }
+
+    @Test("Dashes with nothing above them stay a thematic break")
+    func thematicBreakSurvivesSetextSupport() {
+        #expect(MarkdownParser.parse("---\ntext") == [.thematicBreak, .paragraph(text: "text")])
+        #expect(MarkdownParser.parse("text\n\n---") == [.paragraph(text: "text"), .thematicBreak])
+        #expect(MarkdownParser.parse("# Title\n---") == [
+            .heading(level: 1, text: "Title"),
+            .thematicBreak,
+        ])
+        // Internal spaces make a break, never a setext underline.
+        #expect(MarkdownParser.parse("text\n- - -") == [.paragraph(text: "text"), .thematicBreak])
+    }
+
+    @Test("A table delimiter row is still a delimiter, not a setext underline")
+    func tableDelimiterSurvivesSetextSupport() {
+        let blocks = MarkdownParser.parse("| a |\n| - |\n| 1 |")
+        guard case let .table(table) = blocks.first else {
+            Issue.record("expected a table, got \(String(describing: blocks.first))")
+            return
+        }
+        #expect(blocks.count == 1)
+        #expect(table.header == ["a"])
+        #expect(table.rows == [["1"]])
+    }
+
     @Test("Bullet lists collect one item per marker")
     func bulletList() {
         let blocks = MarkdownParser.parse("- one\n- two")
