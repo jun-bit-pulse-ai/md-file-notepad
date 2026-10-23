@@ -1,16 +1,17 @@
 /**
- * Generates the application icon as a 1024x1024 PNG.
+ * Generates the application icons: the 1024x1024 PNG electron-builder packages
+ * and the ten macOS slots of the SwiftUI app's `AppIcon.appiconset`.
  *
  * There is no image tooling in the build environment and an icon is not
  * something to hand-maintain as binary anyway, so the artwork is described
  * here as geometry and rendered with signed-distance fields. The output is
  * deterministic: `test/icon.test.mjs` re-renders it and compares against the
- * committed file, so the PNG can never silently drift from this source.
+ * committed files, so they can never silently drift from this source.
  *
  * Run `npm run icon` after editing.
  */
 import { deflateSync } from 'node:zlib'
-import { writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -154,16 +155,84 @@ export function encodePng(pixels, size = SIZE) {
 
 export const iconPng = (size = SIZE) => encodePng(renderIcon(size), size)
 
+/* ------------------------------ asset catalogue --------------------------- */
+
+/**
+ * The ten macOS slots Xcode declares for an app icon: five point sizes, each
+ * at 1x and 2x. Two pairs render to the same pixel count (16@2x and 32@1x are
+ * both 32px, 32@2x and 64 likewise) but Xcode wants a file per slot, so each
+ * one gets its own name.
+ */
+export const MAC_SLOTS = [16, 32, 128, 256, 512].flatMap((points) => [
+  { points, scale: 1 },
+  { points, scale: 2 },
+])
+
+/** `icon_128x128@2x.png` — the naming Xcode itself uses for mac app icons. */
+export const slotFilename = ({ points, scale }) =>
+  `icon_${points}x${points}${scale > 1 ? `@${scale}x` : ''}.png`
+
+/**
+ * The asset catalogue index.
+ *
+ * Written in Xcode's own dialect (`"key" : value`, keys alphabetical) so that
+ * opening the catalogue in Xcode does not immediately rewrite the file. That
+ * is also why `*.xcassets` is in `.prettierignore`.
+ */
+export function appIconContents() {
+  const document = {
+    images: MAC_SLOTS.map((slot) => ({
+      filename: slotFilename(slot),
+      idiom: 'mac',
+      scale: `${slot.scale}x`,
+      size: `${slot.points}x${slot.points}`,
+    })),
+    info: { author: 'xcode', version: 1 },
+  }
+  // Every key here is a plain identifier and no value contains `": `, so
+  // widening the separator on the serialised form is unambiguous.
+  return `${JSON.stringify(document, null, 2).replace(/"([a-z]+)": /g, '"$1" : ')}\n`
+}
+
+/** Writes the ten slot PNGs plus `Contents.json` into `dir`. */
+export function writeAppIconSet(dir) {
+  mkdirSync(dir, { recursive: true })
+
+  const byPixelSize = new Map()
+  const written = []
+  for (const slot of MAC_SLOTS) {
+    const pixels = slot.points * slot.scale
+    if (!byPixelSize.has(pixels)) byPixelSize.set(pixels, iconPng(pixels))
+    const png = byPixelSize.get(pixels)
+    writeFileSync(path.join(dir, slotFilename(slot)), png)
+    written.push({ ...slot, pixels, bytes: png.length })
+  }
+
+  const contents = Buffer.from(appIconContents())
+  writeFileSync(path.join(dir, 'Contents.json'), contents)
+  return { written, bytes: written.reduce((n, f) => n + f.bytes, contents.length) }
+}
+
 /* ----------------------------------- cli ---------------------------------- */
 
+const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
+
+export const ELECTRON_ICON = path.join(repoRoot, 'build-resources', 'icon.png')
+export const APPICONSET = path.join(
+  repoRoot,
+  'MarkdownNotepad',
+  'Assets.xcassets',
+  'AppIcon.appiconset'
+)
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const target = path.join(
-    path.dirname(fileURLToPath(import.meta.url)),
-    '..',
-    'build-resources',
-    'icon.png'
-  )
   const png = iconPng()
-  writeFileSync(target, png)
-  console.log(`wrote ${target} (${SIZE}x${SIZE}, ${(png.length / 1024).toFixed(1)} KB)`)
+  writeFileSync(ELECTRON_ICON, png)
+  const kb = (bytes) => `${(bytes / 1024).toFixed(1)} KB`
+  console.log(`wrote ${ELECTRON_ICON} (${SIZE}x${SIZE}, ${kb(png.length)})`)
+
+  const { written, bytes } = writeAppIconSet(APPICONSET)
+  console.log(
+    `wrote ${written.length} slots + Contents.json in ${APPICONSET} (${kb(bytes)})`
+  )
 }
