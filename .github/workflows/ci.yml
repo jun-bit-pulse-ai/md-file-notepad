@@ -251,3 +251,42 @@ jobs:
       # dependency, so they need no simulator, destination or app host.
       - name: swift test
         run: swift test --package-path Packages/MarkdownCore
+
+  xcode:
+    name: Build the SwiftUI app
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Reported before anything depends on it: the project asks for a macOS 26
+      # deployment target and swift-tools-version 6.2, so a runner that cannot
+      # meet that should say so rather than fail as a compile error.
+      - name: Toolchain
+        run: |
+          swift --version
+          sw_vers
+          xcodebuild -version
+
+      # Nothing else in this workflow compiles MarkdownNotepad/. `swift test`
+      # builds the MarkdownCore package only, so without this job every file in
+      # the app target could stop compiling and CI would stay green.
+      #
+      # Signing is off: the project carries an ad-hoc identity and no team, and
+      # a build that needed a real one could not run here at all.
+      - name: Build and test
+        env:
+          CODE_SIGNING_ALLOWED: 'NO'
+        run: |
+          xcodebuild -project MarkdownNotepad.xcodeproj \
+            -scheme MarkdownNotepad \
+            -destination 'platform=macOS,arch=arm64' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+          xcodebuild -project MarkdownNotepad.xcodeproj \
+            -scheme MarkdownNotepad \
+            -destination 'platform=macOS,arch=arm64' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            test
