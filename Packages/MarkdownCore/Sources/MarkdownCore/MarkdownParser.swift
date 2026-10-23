@@ -121,11 +121,32 @@ public enum MarkdownParser {
         while index < lines.count {
             let line = lines[index]
             if isBlank(line) { break }
+            // Checked before `startsNewBlock` so a run of dashes underlining a
+            // paragraph becomes a setext heading rather than a thematic break.
+            if !collected.isEmpty, let level = setextLevel(line) {
+                return (.heading(level: level, text: collected.joined(separator: "\n")), index + 1)
+            }
             if index > start, startsNewBlock(lines, at: index) { break }
             collected.append(line.trimmingCharacters(in: .whitespaces))
             index += 1
         }
         return (.paragraph(text: collected.joined(separator: "\n")), index)
+    }
+
+    /// The heading level of a setext underline (`===` -> 1, `---` -> 2), or
+    /// `nil` when the line is not one.
+    ///
+    /// Only the underline is recognised here; whether something precedes it to
+    /// underline is the caller's business, which is why this lives on the
+    /// paragraph path and not in the block dispatcher. A thematic break with
+    /// internal spaces (`- - -`) is deliberately not an underline, matching
+    /// CommonMark and `outline.js`.
+    private static func setextLevel(_ line: String) -> Int? {
+        guard leadingSpaces(line) <= 3 else { return nil }
+        let trimmed = line.trimmingCharacters(in: .whitespaces)
+        guard let marker = trimmed.first, marker == "=" || marker == "-" else { return nil }
+        guard trimmed.allSatisfy({ $0 == marker }) else { return nil }
+        return marker == "=" ? 1 : 2
     }
 
     /// Lines that interrupt an open paragraph.
@@ -229,6 +250,11 @@ public enum MarkdownParser {
             }
 
             guard itemLines != nil else { break }
+            // Neither a thematic break nor a setext underline is a lazy
+            // continuation line, so "- item\n---" closes the list and stays a
+            // list plus a break instead of underlining "item" as an H2.
+            if leadingSpaces(line) < contentOffset,
+               isThematicBreak(line) || setextLevel(line) != nil { break }
             itemLines?.append(stripIndent(line, upTo: contentOffset))
             index += 1
         }
