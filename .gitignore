@@ -25,3 +25,9 @@ xcuserdata/
 # (Packages/ is deliberately NOT ignored -- MarkdownCore is a local package.)
 .build/
 .swiftpm/
+
+# Subagent worktrees. The harness creates a full checkout per agent under
+# here when they run isolated, so this is the whole repository several times
+# over -- never something to commit. .claude/hooks and .claude/settings.json
+# are tracked, so only this subdirectory is ignored.
+.claude/worktrees/
