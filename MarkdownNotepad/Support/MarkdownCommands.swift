@@ -18,6 +18,9 @@ struct MarkdownCommands: Commands {
             button(.heading1, key: "1", modifiers: [.command, .control])
             button(.heading2, key: "2", modifiers: [.command, .control])
             button(.heading3, key: "3", modifiers: [.command, .control])
+            button(.heading4, key: "4", modifiers: [.command, .control])
+            button(.heading5, key: "5", modifiers: [.command, .control])
+            button(.heading6, key: "6", modifiers: [.command, .control])
 
             Divider()
 

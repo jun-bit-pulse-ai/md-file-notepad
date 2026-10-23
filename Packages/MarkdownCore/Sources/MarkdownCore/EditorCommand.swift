@@ -3,7 +3,7 @@ import Foundation
 /// A source-level formatting action applied to the editor's current selection.
 public enum EditorCommand: Hashable, CaseIterable, Identifiable, Sendable {
     case bold, italic, strikethrough, inlineCode, link
-    case heading1, heading2, heading3
+    case heading1, heading2, heading3, heading4, heading5, heading6
     case bulletList, numberedList, taskList, quote, codeBlock, horizontalRule
 
     public var id: Self { self }
@@ -18,6 +18,9 @@ public enum EditorCommand: Hashable, CaseIterable, Identifiable, Sendable {
         case .heading1: "Heading 1"
         case .heading2: "Heading 2"
         case .heading3: "Heading 3"
+        case .heading4: "Heading 4"
+        case .heading5: "Heading 5"
+        case .heading6: "Heading 6"
         case .bulletList: "Bulleted List"
         case .numberedList: "Numbered List"
         case .taskList: "Task List"
@@ -37,6 +40,11 @@ public enum EditorCommand: Hashable, CaseIterable, Identifiable, Sendable {
         case .heading1: "textformat.size.larger"
         case .heading2: "textformat.size"
         case .heading3: "textformat.size.smaller"
+        // The three-step `textformat.size` family runs out here, so the
+        // deeper levels fall back to numbered glyphs.
+        case .heading4: "4.square"
+        case .heading5: "5.square"
+        case .heading6: "6.square"
         case .bulletList: "list.bullet"
         case .numberedList: "list.number"
         case .taskList: "checklist"
@@ -63,6 +71,9 @@ public enum EditorCommand: Hashable, CaseIterable, Identifiable, Sendable {
         case .heading1: "# "
         case .heading2: "## "
         case .heading3: "### "
+        case .heading4: "#### "
+        case .heading5: "##### "
+        case .heading6: "###### "
         case .bulletList: "- "
         case .taskList: "- [ ] "
         case .quote: "> "
