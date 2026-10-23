@@ -151,9 +151,11 @@ them.
 
 `build-resources/icon.png` is generated, not drawn: `scripts/make-icon.mjs`
 describes the artwork as signed-distance fields and renders a 1024x1024 PNG with
-no image tooling or dependencies. Run `npm run icon` after editing it —
-`test/icon.test.mjs` re-renders the artwork and compares it against the
-committed file pixel by pixel, so the two cannot drift apart.
+no image tooling or dependencies. The same script also writes the ten macOS
+slots of the SwiftUI app's `AppIcon.appiconset`, so both front ends carry the
+same artwork. Run `npm run icon` after editing it — `test/icon.test.mjs`
+re-renders the artwork and compares it against the committed files pixel by
+pixel, so they cannot drift apart.
 
 ### Mac App Store
 
@@ -171,9 +173,9 @@ readable. Shipping it also needs a paid Apple Developer account and a
 
 ```bash
 npm run watch        # rebuild the renderer on change
-npm run icon         # regenerate build-resources/icon.png
+npm run icon         # regenerate the icon PNG and the AppIcon slots
 npm run dev          # build once, then launch
-npm test             # 178 unit tests
+npm test             # 278 unit tests
 npm run smoke        # boot the real app headlessly and screenshot it
 npm run lint         # ESLint
 npm run lint:fix     # ESLint, fixing what it can
@@ -188,8 +190,10 @@ Node, the renderer is ESM in a browser, and the tests are a mix.
 
 The unit tests cover outline extraction, document statistics, the formatting
 commands, file I/O, the preference store, the spell-check menu, fuzzy file
-matching, the recursive file walk, the generated app icon, and the
-Markdown-to-Word mapping. They run on plain Node with no browser or Electron.
+matching, the recursive file walk, the generated app icon, the shared Markdown
+renderer, the HTML and PDF export document builder, the Help shortcut sheet,
+and the Markdown-to-Word mapping. They run on plain Node with no browser or
+Electron.
 
 `npm run smoke` launches the actual main process, preload and renderer under a
 virtual display, asserts the editor mounted with no console errors, and writes
@@ -223,19 +227,27 @@ outside remote sessions via `$CLAUDE_CODE_REMOTE`.
 
 `.github/workflows/ci.yml` runs on every push to `main` and every pull request:
 
-| Job                 | Runner | What it proves                                                                                                                   |
-| ------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Lint and format     | Ubuntu | ESLint reports no problems and every file matches Prettier                                                                       |
-| Unit tests          | Ubuntu | The 178 tests pass and the renderer bundle builds                                                                                |
-| Headless smoke test | Ubuntu | The real app boots under Xvfb with no console errors, Quick Open and Preferences open and work, and a `.docx` export round-trips |
-| Package macOS app   | macOS  | `electron-builder` assembles a real `.app` with an executable, an `Info.plist`, and the `.md` file association intact            |
-| Swift package tests | macOS  | `swift test` builds `MarkdownCore` and runs its 37 Swift Testing cases, with no Xcode project or destination involved            |
+| Job                   | Runner | What it proves                                                                                                                   |
+| --------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Lint and format       | Ubuntu | ESLint reports no problems and every file matches Prettier                                                                       |
+| Unit tests            | Ubuntu | The 278 tests pass and the renderer bundle builds                                                                                |
+| Headless smoke test   | Ubuntu | The real app boots under Xvfb with no console errors, Quick Open and Preferences open and work, and a `.docx` export round-trips |
+| Package macOS app     | macOS  | `electron-builder` assembles a real `.app` with an executable, an `Info.plist`, and the `.md` file association intact            |
+| Swift package tests   | macOS  | `swift test` builds `MarkdownCore` and runs its 117 Swift Testing cases, with no Xcode project or destination involved           |
+| Build the SwiftUI app | macOS  | This is the job that compiles the SwiftUI app: `xcodebuild` builds the `MarkdownNotepad` scheme and runs its Xcode test bundle   |
 
 The smoke job uploads its screenshot and exported document as artifacts, so a
 failure can be inspected rather than guessed at. The packaging job builds
-unpacked (`--dir`) and skips code signing, so it needs no certificates. The
-Swift job prints the runner's toolchain and SDK before building, so a package
-that outruns the runner reads as that rather than as a compile error.
+unpacked (`--dir`) and skips code signing, so it needs no certificates. Both
+macOS Swift jobs print the runner's Swift, macOS and Xcode versions first, so a
+project that outruns the runner reads as that rather than as a compile error.
+
+The two Swift jobs do not overlap. `swift test` builds the `MarkdownCore`
+package only, so nothing in `MarkdownNotepad/` is compiled by it — every file
+in the app target could stop compiling and that job would stay green. The
+`xcodebuild` job is what covers the app target, and it builds and tests with
+`CODE_SIGNING_ALLOWED=NO`, since the project carries an ad-hoc identity and no
+development team.
 
 `.github/workflows/release.yml` is separate and does not run on pull requests —
 see [Building a .app / .dmg](#building-a-app--dmg). It re-runs lint and the unit
@@ -313,12 +325,12 @@ come from, since it already runs under the App Sandbox that
 
 ### Layout
 
-| Path                        | What it holds                                                                             |
-| --------------------------- | ----------------------------------------------------------------------------------------- |
-| `Packages/MarkdownCore`     | Pure logic: block parser, selection formatter, document statistics. No AppKit or SwiftUI. |
-| `MarkdownNotepad/`          | The app: document type, editor, preview renderer, menus, settings.                        |
-| `…/Tests/MarkdownCoreTests` | Swift Testing suites for `MarkdownCore`, inside the package.                              |
-| `Config/`                   | `Info.plist` (document types, `.md` UTI) and the sandbox entitlements.                    |
+| Path                        | What it holds                                                                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `Packages/MarkdownCore`     | Pure logic: block parser, selection formatter, document statistics, outline extraction, fuzzy matching. No AppKit or SwiftUI. |
+| `MarkdownNotepad/`          | The app: document type, editor, preview renderer, menus, settings.                                                            |
+| `…/Tests/MarkdownCoreTests` | Swift Testing suites for `MarkdownCore`, inside the package.                                                                  |
+| `Config/`                   | `Info.plist` (document types, `.md` UTI) and the sandbox entitlements.                                                        |
 
 The Xcode target uses a synchronized folder group, so a new `.swift` file under
 `MarkdownNotepad/` is picked up automatically — no `project.pbxproj` edit.
@@ -340,7 +352,7 @@ destination:
 swift test --package-path Packages/MarkdownCore
 ```
 
-Both commands run the same three files. They live in the package's own
+Both commands run the same five files. They live in the package's own
 `Tests/MarkdownCoreTests` directory, so SwiftPM picks them up from the
 `.testTarget` in `Package.swift`, and the Xcode test bundle reaches them
 through a synchronized folder group pointed at the same path. They import
@@ -353,22 +365,32 @@ Xcode run does not launch the app either.
 - Document-based editing (`DocumentGroup`) for `.md`, `.markdown`, `.mdown`,
   `.mkd` and plain text, registered as owner of `net.daringfireball.markdown`
 - Three view modes — editor, split and preview — defaulting to split
-- `MarkdownParser` produces headings, paragraphs, lists, quotes, fenced code,
-  tables with column alignment, and thematic breaks
-- 14 selection-aware formatting commands: bold, italic, strikethrough, inline
-  code, link, headings 1–3, bullet/numbered/task lists, quote, code block and
-  horizontal rule
-- Word, character and line counts with a reading estimate at 200 wpm
+- `MarkdownParser` produces headings — both `#` and setext (`===` / `---`
+  underlines) — paragraphs, lists, quotes, fenced code, tables with column
+  alignment, and thematic breaks
+- 17 selection-aware formatting commands: bold, italic, strikethrough, inline
+  code, link, headings 1–6 (⌃⌘1–⌃⌘6), bullet/numbered/task lists, quote, code
+  block and horizontal rule
+- Word, character and line counts with a reading estimate at 200 wpm. The word
+  count is prose: fenced and inline code, link targets, images, block and
+  emphasis markers, HTML and table pipes are stripped before counting, matching
+  `src/renderer/lib/stats.js`. `DocumentStatistics` also carries a
+  whitespace-excluded character count, which the status bar does not show yet
+- `Outline` (heading extraction, slugs, inline stripping, a nested tree and the
+  active heading for a cursor line) and `Fuzzy` (subsequence matching and
+  ranking for a Quick Open palette) are ported and tested, but no view consumes
+  either yet
 - Settings for editor and preview font size (9–32 pt), default view mode and
   status-bar visibility
 
 ### Not done yet
 
-- The app icon: `AppIcon.appiconset` declares all ten slots but no image files
 - Distribution: `CODE_SIGN_IDENTITY` is ad-hoc `-` with no development team
 - Export to HTML, PDF or Word
-- Outline sidebar, find and replace, and syntax highlighting in the source editor
-- Headings 4–6, highlights, and math — all present in the Electron app
+- Outline sidebar, find and replace, and syntax highlighting in the source
+  editor — the outline logic exists in `MarkdownCore`, the sidebar does not
+- Quick Open — the matcher exists in `MarkdownCore`, the palette does not
+- Highlights and math — both present in the Electron app
 
 ## License
 
